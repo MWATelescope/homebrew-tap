@@ -1,2 +1,3 @@
 # homebrew-tap
-A homebrew tap for my work
+
+A homebrew tap for repos that I use
