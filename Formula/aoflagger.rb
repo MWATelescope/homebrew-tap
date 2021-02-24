@@ -23,7 +23,7 @@ class Aoflagger < Formula
   depends_on "lua@5.3"
   depends_on "pybind11"
   depends_on "python@3.9"
-  depends_on "ska-sa/tap/casacore"
+  depends_on "casacore"
 
   def install
     build_type = "Release"
