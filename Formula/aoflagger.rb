@@ -16,6 +16,7 @@ class Aoflagger < Formula
 
   depends_on "boost"
   depends_on "boost-build"
+  depends_on "casacore"
   depends_on "cfitsio"
   depends_on "fftw"
   depends_on "lapack"
@@ -23,7 +24,6 @@ class Aoflagger < Formula
   depends_on "lua@5.3"
   depends_on "pybind11"
   depends_on "python@3.9"
-  depends_on "casacore"
 
   def install
     build_type = "Release"

@@ -32,7 +32,7 @@ jobs:
 
       - run: brew test-bot --only-setup Formula/*
 
-      - run: brew test-bot --only-tap-syntax Formula/*
+      - run: brew test-bot --only-tap-syntax
 
       - run: brew test-bot --only-formulae Formula/*
 
