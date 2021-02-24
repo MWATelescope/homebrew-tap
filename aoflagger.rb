@@ -2,12 +2,7 @@ class Aoflagger < Formula
   desc "Find and remove radio-frequency interference (RFI) in radio astronomical observations"
   homepage "https://gitlab.com/aroffringa/aoflagger"
 
-  # Most recent release as of 2021-02-24 does not compile
-  # url "https://gitlab.com/aroffringa/aoflagger/-/archive/v3.0.0/aoflagger-v3.0.0.zip"
-  # sha256 "76df43c81e5cf736b9a93881afe6d3b043817ea78bdd6c244b74bff8d030a93d"
-
-  url "https://gitlab.com/aroffringa/aoflagger/-/archive/34f64162b91ede94684a892f7a0f48d61309f90d/aoflagger-34f64162b91ede94684a892f7a0f48d61309f90d.zip"
-  sha256 "ce1150564c124214e8e0d5f7e26822b95886c158095503b71887d052a6b15907"
+  url "https://gitlab.com/aroffringa/aoflagger.git", :using => :git, :tag => "v3.0.0"
 
   depends_on "ska-sa/tap/casacore"
   depends_on "lua@5.3"
@@ -23,7 +18,11 @@ class Aoflagger < Formula
   depends_on "cmake" => :build
 
   head do
-    url "https://gitlab.com/aroffringa/aoflagger.git"
+    url "https://gitlab.com/aroffringa/aoflagger.git", :using => :git
+  end
+
+  stable do
+    patch :DATA
   end
 
   def install
@@ -38,3 +37,18 @@ class Aoflagger < Formula
     end
   end
 end
+
+__END__
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 957cb76..0916bb7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -77,8 +77,6 @@ endif("${isSystemDir}" STREQUAL "-1")
+ 
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=vla -DNDEBUG -funroll-loops -O3 -std=c++11")
+ 
+-string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,--no-undefined")
+-
+ include(CheckCXXCompilerFlag)
+ include(CheckSymbolExists) 
+ include(CheckCXXSymbolExists)
