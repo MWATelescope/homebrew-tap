@@ -1,3 +1,3 @@
 # homebrew-tap
 
-A homebrew tap for repos that I use
+A homebrew tap to facilitate macOS development on MWATelescope repositories by bottling dependencies.
