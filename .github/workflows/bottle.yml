@@ -2,7 +2,8 @@
 
 name: brew test-bot
 on:
-  release:
+  push:
+    tags:
 jobs:
   test-bot:
     strategy:
