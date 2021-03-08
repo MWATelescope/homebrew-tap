@@ -3,7 +3,6 @@
 name: brew test-bot
 on:
   push:
-    branches: main
   pull_request:
 jobs:
   test-bot:
@@ -36,8 +35,45 @@ jobs:
 
       - run: brew test-bot --only-formulae Formula/casacore-data.rb Formula/casacore.rb Formula/aoflagger.rb
 
-      - name: Upload bottles as artifact
-        uses: actions/upload-artifact@main
+      # - name: Upload bottles as artifact
+      #   uses: actions/upload-artifact@main
+      #   with:
+      #     name: bottles
+      #     path: '*.bottle.*'
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          name: bottles
-          path: '*.bottle.*'
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Brew bottles for casacore / aoflagger as of ${{ steps.date.outputs.date }}
+          draft: false
+          prerelease: false
+      - name: Upload Casacore-data Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: 'casacore-data--*.bottle.tar.gz'
+          asset_content_type: application/zip
+      - name: Upload Casacore Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: 'casacore--*.bottle.tar.gz'
+          asset_content_type: application/zip
+      - name: Upload Aoflagger Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: 'aoflagger--*.bottle.tar.gz'
+          asset_content_type: application/zip
