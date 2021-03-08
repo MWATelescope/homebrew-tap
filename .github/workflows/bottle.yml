@@ -11,29 +11,41 @@ jobs:
         os: [macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+      # - name: Set up Homebrew
+      #   id: set-up-homebrew
+      #   uses: Homebrew/actions/setup-homebrew@master
 
-      - name: Cache Homebrew Bundler RubyGems
-        id: cache
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
-          key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
-          restore-keys: ${{ runner.os }}-rubygems-
+      # - name: Cache Homebrew Bundler RubyGems
+      #   id: cache
+      #   uses: actions/cache@v1
+      #   with:
+      #     path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+      #     key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+      #     restore-keys: ${{ runner.os }}-rubygems-
 
-      - name: Install Homebrew Bundler RubyGems
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: brew install-bundler-gems
+      # - name: Install Homebrew Bundler RubyGems
+      #   if: steps.cache.outputs.cache-hit != 'true'
+      #   run: brew install-bundler-gems
 
-      - run: brew test-bot --only-cleanup-before Formula/*
+      # - run: brew test-bot --only-cleanup-before Formula/*
 
-      - run: brew test-bot --only-setup Formula/*
+      # - run: brew test-bot --only-setup Formula/*
 
-      - run: brew test-bot --only-tap-syntax
+      # - run: brew test-bot --only-tap-syntax
 
-      - run: brew test-bot --only-formulae Formula/casacore-data.rb Formula/casacore.rb Formula/aoflagger.rb
+      # - run: brew test-bot --only-formulae Formula/casacore-data.rb Formula/casacore.rb Formula/aoflagger.rb
+
+      - name: fake archives
+        run: |
+          echo 'casacore-data' > casacore-data--0.1.0.catalina.bottle.tar.gz \
+          && echo 'casacore' > casacore--3.4.0.catalina.bottle.tar.gz \
+          && echo 'aoflagger' > aoflagger--3.0.0.catalina.bottle.tar.gz
+
+      - id: archive_names
+        run: |
+          echo "::set-output name=casacore_data_path::$(ls casacore-data--*.bottle.tar.gz)"
+          echo "::set-output name=casacore_path::$(ls casacore--*.bottle.tar.gz)"
+          echo "::set-output name=aoflagger_path::$(ls aoflagger--*.bottle.tar.gz)"
 
       # - name: Upload bottles as artifact
       #   uses: actions/upload-artifact@main
@@ -50,7 +62,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            Brew bottles for casacore / aoflagger as of ${{ steps.date.outputs.date }}
+            Brew bottles for casacore / aoflagger
           draft: false
           prerelease: false
       - name: Upload Casacore-data Release Asset
@@ -59,21 +71,24 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: 'casacore-data--*.bottle.tar.gz'
-          asset_content_type: application/zip
+          asset_path: ${{ steps.archive_names.outputs.casacore_data_path }}
+          asset_name: ${{ steps.archive_names.outputs.casacore_data_path }}
+          asset_content_type: application/gzip
       - name: Upload Casacore Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: 'casacore--*.bottle.tar.gz'
-          asset_content_type: application/zip
+          asset_path: ${{ steps.archive_names.outputs.casacore_path }}
+          asset_name: ${{ steps.archive_names.outputs.casacore_path }}
+          asset_content_type: application/gzip
       - name: Upload Aoflagger Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: 'aoflagger--*.bottle.tar.gz'
-          asset_content_type: application/zip
+          asset_path: ${{ steps.archive_names.outputs.aoflagger_path }}
+          asset_name: ${{ steps.archive_names.outputs.aoflagger_path }}
+          asset_content_type: application/gzip
