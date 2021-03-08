@@ -11,12 +11,12 @@ class CasacoreData < Formula
   url "https://github.com/derwentx/WSRT-Measures-Mirror/releases/download/v2021.02.26/WSRT_Measures.zip"
   sha256 "e4b21a105fc9929ddd59c891dd551bdd58150f2dbec05acce291c550f9873bf4"
 
-  option "with-casapy", "Use Mac CASA.App (aka casapy) data directory if found"
-  deprecated_option "use-casapy" => "with-casapy"
-
   head do
     url "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar", using: ZtarDownloadStrategy
   end
+
+  option "with-casapy", "Use Mac CASA.App (aka casapy) data directory if found"
+  deprecated_option "use-casapy" => "with-casapy"
 
   APP_DIR = (Pathname.new "/Applications").freeze
   CASAPY_APP_NAME = "CASA.app".freeze
