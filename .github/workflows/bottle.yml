@@ -38,7 +38,7 @@ jobs:
 
       - name: Get version number from current date
         id: date
-        run: echo "::set-output name=date::$(date +'v%Y.%m.%d')"
+        run: echo "::set-output name=date::$(date +'v%Y.%m.%d.%H.%M')"
 
       - name: get archive names
         id: archive_names
