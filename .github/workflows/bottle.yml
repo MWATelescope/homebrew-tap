@@ -45,9 +45,9 @@ jobs:
         run: |
           pwd
           ls -alR ..
-          echo "::set-output name=casacore_data_path::$(ls casacore-data--*.bottle.tar.gz)"
-          echo "::set-output name=casacore_path::$(ls casacore--*.bottle.tar.gz)"
-          echo "::set-output name=aoflagger_path::$(ls aoflagger--*.bottle.tar.gz)"
+          echo "::set-output name=casacore_data_path::$(ls casacore-data--*.bottle*.tar.gz)"
+          echo "::set-output name=casacore_path::$(ls casacore--*.bottle*.tar.gz)"
+          echo "::set-output name=aoflagger_path::$(ls aoflagger--*.bottle*.tar.gz)"
 
       - name: Create Release
         id: create_release
