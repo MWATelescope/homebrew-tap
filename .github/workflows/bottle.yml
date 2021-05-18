@@ -28,13 +28,15 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: brew install-bundler-gems
 
+      - run: brew style Formula/*
+
       - run: brew test-bot --only-cleanup-before Formula/*
 
       - run: brew test-bot --only-setup Formula/*
 
       - run: brew test-bot --only-tap-syntax
 
-      - run: brew test-bot --only-formulae Formula/casacore-data.rb Formula/casacore.rb Formula/aoflagger.rb
+      - run: brew test-bot --only-formulae Formula/casacore-data.rb Formula/casacore.rb Formula/aoflagger.rb Formula/mwalib.rb
 
       - name: Get version number from current date
         id: date
@@ -48,6 +50,7 @@ jobs:
           echo "::set-output name=casacore_data_path::$(ls casacore-data--*.bottle*.tar.gz)"
           echo "::set-output name=casacore_path::$(ls casacore--*.bottle*.tar.gz)"
           echo "::set-output name=aoflagger_path::$(ls aoflagger--*.bottle*.tar.gz)"
+          echo "::set-output name=mwalib_path::$(ls mwalib--*.bottle*.tar.gz)"
 
       - name: Create Release
         id: create_release
@@ -87,4 +90,13 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.archive_names.outputs.aoflagger_path }}
           asset_name: ${{ steps.archive_names.outputs.aoflagger_path }}
+          asset_content_type: application/gzip
+      - name: Upload MWALib Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.archive_names.outputs.mwalib_path }}
+          asset_name: ${{ steps.archive_names.outputs.mwalib_path }}
           asset_content_type: application/gzip
