@@ -4,7 +4,7 @@ name: brew test-bot
 on:
   push:
     branches:
-      main
+    - main
 jobs:
   test-bot:
     strategy:
@@ -36,7 +36,7 @@ jobs:
 
       - run: brew test-bot --only-tap-syntax
 
-      - run: brew test-bot --only-formulae Formula/casacore-data.rb Formula/casacore.rb Formula/aoflagger.rb Formula/mwalib.rb
+      - run: brew test-bot --only-formulae Formula/casacore-data.rb Formula/casacore.rb Formula/aoflagger.rb Formula/mwalib.rb Formula/erfa.rb
 
       - name: Get version number from current date
         id: date
@@ -51,6 +51,7 @@ jobs:
           echo "::set-output name=casacore_path::$(ls casacore--*.bottle*.tar.gz)"
           echo "::set-output name=aoflagger_path::$(ls aoflagger--*.bottle*.tar.gz)"
           echo "::set-output name=mwalib_path::$(ls mwalib--*.bottle*.tar.gz)"
+          echo "::set-output name=erfa_path::$(ls erfa--*.bottle*.tar.gz)"
 
       - name: Create Release
         id: create_release
@@ -99,4 +100,13 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.archive_names.outputs.mwalib_path }}
           asset_name: ${{ steps.archive_names.outputs.mwalib_path }}
+          asset_content_type: application/gzip
+      - name: Upload ERFA Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.archive_names.outputs.erfa_path }}
+          asset_name: ${{ steps.archive_names.outputs.erfa_path }}
           asset_content_type: application/gzip

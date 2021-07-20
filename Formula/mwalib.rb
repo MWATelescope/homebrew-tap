@@ -27,8 +27,7 @@ int main(int argc, char *argv[]) {
 }
 "
     system \
-      ENV.cc, "-O3", testpath / "mwalib_test.c", "-o", "mwalib_test", \
-      "-I", include, "-L", lib, "-lmwalib"
+      ENV.cc, "-O3", testpath / "mwalib_test.c", "-o", "mwalib_test", "-I", include, "-L", lib, "-lmwalib"
     system "./mwalib_test"
   end
 end
