@@ -1,8 +1,8 @@
 class Mwalib < Formula
   desc "MWA library to read raw visibilities, voltages and metadata"
   homepage "https://github.com/MWATelescope/mwalib"
-  url "https://github.com/MWATelescope/mwalib/releases/download/v0.7.1/mwalib-v0.7.1-macosx.tar.gz"
-  sha256 "b8b164b5a0b0f8e2dba9ea49504b2906fa8eadb71cabcc15efd5054dfd604397"
+  url "https://github.com/MWATelescope/mwalib/releases/download/v0.13.1/mwalib-v0.13.1-macosx.tar.gz"
+  sha256 "b10ce1b5e93063b3ee87c9b48f9f2d0d7ded52ccf63aaf930135f19a148c95c5"
   license "MPL-2.0"
 
   depends_on "gcc" => :test
