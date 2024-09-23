@@ -1,17 +1,14 @@
 class Aoflagger < Formula
   desc "Find and remove radio-frequency interference in radio astronomical observations"
   homepage "https://gitlab.com/aroffringa/aoflagger"
+  url "https://gitlab.com/aroffringa/aoflagger/-/package_files/96704214/download"
+  version "3.4.0"
+  sha256 "9560b7381b68f37d842599f222a8aa2a5d3d3d501d1277471e1a0ba3d7b2aeba"
   license "GPL-3.0-only"
 
-  stable do
-    url "https://gitlab.com/aroffringa/aoflagger/-/package_files/96704214/download"
-    sha256 "9560b7381b68f37d842599f222a8aa2a5d3d3d501d1277471e1a0ba3d7b2aeba"
-    version "v3.4.0"
-  end
-
-  head do
-    url "https://gitlab.com/aroffringa/aoflagger.git"
-  end
+  # head do
+  #   url "https://gitlab.com/aroffringa/aoflagger.git"
+  # end
 
   option "with-python", "Build Python bindings"
 
@@ -19,7 +16,7 @@ class Aoflagger < Formula
 
   depends_on "boost"
   depends_on "boost-build"
-  depends_on "casacore/tap/casacore" => :recommended
+  depends_on "casacore/tap/casacore"
   depends_on "cfitsio"
   depends_on "fftw"
   depends_on "lapack"
@@ -34,7 +31,7 @@ class Aoflagger < Formula
       cmake_args = std_cmake_args
       cmake_args.delete "-DCMAKE_BUILD_TYPE=None"
       cmake_args << "-DCMAKE_BUILD_TYPE=#{build_type}"
-      cmake_args << "-DPORTABLE=False" # optimize build for local machine
+      cmake_args << "-DPORTABLE=False"
       system "cmake", "../..", *cmake_args, *std_cmake_args
       system "make", "install"
     end

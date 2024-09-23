@@ -1,33 +1,32 @@
 class Mwalib < Formula
   desc "MWA library to read raw visibilities, voltages and metadata"
   homepage "https://github.com/MWATelescope/mwalib"
-  sha256 "580a01aedfd515dd19e43b416b98d6c3121098460a8d96e8aecba28558854c24"
   url "https://github.com/MWATelescope/mwalib/archive/refs/tags/v1.5.0.tar.gz"
+  sha256 "580a01aedfd515dd19e43b416b98d6c3121098460a8d96e8aecba28558854c24"
   license "MPL-2.0"
 
   head "https://github.com/MWATelescope/mwalib.git"
 
   option "with-python", "Build Python bindings"
+  option "with-dylib", "Build dynamic library"
 
+  depends_on "automake" => :build
+  depends_on "maturin" => :build if build.with?("python")
+  depends_on "rust" => :build
   depends_on "gcc" => :test
   depends_on "cfitsio"
-  depends_on "rust" => :build
-  depends_on "automake" => :build
-  if build.with?("python")
-    depends_on "maturin" => :build
-  end
 
   def install
     if build.with? "python"
       system \
         "maturin", "build", "--release", "--features=python"
-      wheel = Dir.new("target/wheels/").select { |f| f =~ /.*\.whl\z/i }[0]
+      wheel = Dir.new("target/wheels/").grep(/.*\.whl\z/i)[0]
       system \
         "pip3", "install", "target/wheels/#{wheel}"
     end
 
     system \
-      "cargo", "build", "--release"
+      "cargo", "build", "--release", *std_cargo_args
     lib.install "target/release/libmwalib.dylib"
     lib.install "target/release/libmwalib.a"
     include.install "include/mwalib.h"
@@ -50,8 +49,6 @@ int main(int argc, char *argv[]) {
       ENV.cc, "-O3", testpath / "mwalib_test.c", "-o", "mwalib_test", "-I", include, "-L", lib, "-lmwalib"
     system "./mwalib_test"
 
-    if build.with? "python"
-      system "python3" "-c" "import mwalib"
-    end
+    system "python3" + "-c" + "import mwalib" if build.with? "python"
   end
 end
