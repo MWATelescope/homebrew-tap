@@ -1,0 +1,39 @@
+class MwaHyperbeam < Formula
+  desc "MWA library to read raw visibilities, voltages and metadata. Can only install to system python"
+  homepage "https://github.com/MWATelescope/mwa_hyperbeam"
+  url "https://github.com/MWATelescope/mwa_hyperbeam/archive/refs/tags/v0.6.0.tar.gz"
+  sha256 "638daca5f0e6abd4fbd19917effa343a6c28dd4b651766188c67e564acd242d9"
+  license "MPL-2.0"
+
+  head "https://github.com/MWATelescope/mwa_hyperbeam.git"
+
+  option "with-python", "Install Python bindings for system python"
+
+  depends_on "rust" => :build
+  depends_on "cfitsio"
+  depends_on "mwalib"
+
+  def install
+    system \
+      "cargo", "build", "--release", "--features=cfitsio"
+    lib.install "target/release/libmwa_hyperbeam.dylib"
+    lib.install "target/release/libmwa_hyperbeam.d"
+    include.install "include/mwa_hyperbeam.h"
+    share.install "examples"
+  end
+
+  test do
+    assert_predicate lib / "libmwa_hyperbeam.a", :exist?
+    assert_predicate include / "mwa_hyperbeam.h", :exist?
+    assert_predicate share / "fee.c", :exist?
+
+    system \
+      ENV.cc, "-O3", share / "fee.c", "-o", "fee", "-I", include, "-L", lib, "-lmwa_hyperbeam"
+    system "./fee"
+
+    if build.with? "python"
+      system \
+        "python3", "-c", "import mwa_hyperbeam"
+    end
+  end
+end

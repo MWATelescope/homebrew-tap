@@ -47,12 +47,11 @@ jobs:
         run: |
           pwd
           ls -alR ..
-          # echo "casacore_data_path=$(ls casacore-data--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
-          # echo "casacore_path=$(ls casacore--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
-          echo "aoflagger_path=$(ls aoflagger--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
-          # echo "mwalib_path=$(ls mwalib--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
-          echo "erfa_path=$(ls erfa--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
-          echo "birli_path=$(ls birli--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
+          {
+            echo "aoflagger_path=$(ls aoflagger--*.bottle*.tar.gz)"
+            echo "erfa_path=$(ls erfa--*.bottle*.tar.gz)"
+            echo "birli_path=$(ls birli--*.bottle*.tar.gz)"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         id: create_release

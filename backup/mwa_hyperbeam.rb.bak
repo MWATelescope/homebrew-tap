@@ -1,0 +1,53 @@
+class MwaHyperbeam < Formula
+  desc "MWA library to read raw visibilities, voltages and metadata. Can only install to system python"
+  homepage "https://github.com/MWATelescope/mwa_hyperbeam"
+  url "https://github.com/MWATelescope/mwa_hyperbeam/archive/refs/tags/v0.6.0.tar.gz"
+  sha256 "638daca5f0e6abd4fbd19917effa343a6c28dd4b651766188c67e564acd242d9"
+  license "MPL-2.0"
+
+  head "https://github.com/MWATelescope/mwa_hyperbeam.git"
+
+  option "with-python", "Install Python bindings for system python"
+
+  depends_on "automake" => :build
+  depends_on "bindgen" => :build
+  depends_on "cmake" => :build
+  depends_on "maturin" => :build
+  depends_on "rust" => :build
+  depends_on "gcc" => :test
+  depends_on "hdf5"
+
+  def install
+    system \
+      "src/update_rust_bindings.sh"
+    if build.with? "python"
+      system \
+        "maturin", "build", "--release", "--features=python,hdf5-static" # "--strip", "-i", "3.7", "3.8", "3.9", "3.10"
+      wheel = Dir.new("target/wheels/").grep(/.*\.whl\z/i)[0]
+      system \
+        "pip3", "install", "target/wheels/#{wheel}"
+    end
+
+    system \
+      "cargo", "build", "--release", "--features=hdf5-static"
+    lib.install "target/release/libmwa_hyperbeam.dylib"
+    lib.install "target/release/libmwa_hyperbeam.d"
+    include.install "include/mwa_hyperbeam.h"
+    share.install "examples"
+  end
+
+  test do
+    assert_predicate lib / "libmwa_hyperbeam.a", :exist?
+    assert_predicate include / "mwa_hyperbeam.h", :exist?
+    assert_predicate share / "fee.c", :exist?
+
+    system \
+      ENV.cc, "-O3", share / "fee.c", "-o", "fee", "-I", include, "-L", lib, "-lmwa_hyperbeam"
+    system "./fee"
+
+    if build.with? "python"
+      system \
+        "python3", "-c", "import mwa_hyperbeam"
+    end
+  end
+end
