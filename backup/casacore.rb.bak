@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Casacore < Formula
   desc "Suite of C++ libraries for radio astronomy data processing"
   homepage "https://github.com/casacore/casacore"
@@ -10,13 +12,13 @@ class Casacore < Formula
 
   depends_on "cmake" => :build
 
-  depends_on "casacore-data" => :recommended
   depends_on "cfitsio"
   depends_on "fftw"
-  depends_on "gcc"  # for gfortran
+  depends_on "gcc"
   depends_on "hdf5"
   depends_on "readline"
   depends_on "wcslib"
+  depends_on "casacore-data" => :recommended # for gfortran
 
   # patch :DATA
 

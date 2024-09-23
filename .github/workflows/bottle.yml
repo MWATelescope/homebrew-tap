@@ -18,7 +18,7 @@ jobs:
 
       - name: Cache Homebrew Bundler RubyGems
         id: cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ${{ steps.set-up-homebrew.outputs.gems-path }}
           key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
@@ -40,18 +40,18 @@ jobs:
 
       - name: Get version number from current date
         id: date
-        run: echo "::set-output name=date::$(date +'v%Y.%m.%d.%H.%M')"
+        run: echo "date=$(date +'v%Y.%m.%d.%H.%M')" >> "$GITHUB_OUTPUT"
 
       - name: get archive names
         id: archive_names
         run: |
           pwd
           ls -alR ..
-          echo "::set-output name=casacore_data_path::$(ls casacore-data--*.bottle*.tar.gz)"
-          echo "::set-output name=casacore_path::$(ls casacore--*.bottle*.tar.gz)"
-          echo "::set-output name=aoflagger_path::$(ls aoflagger--*.bottle*.tar.gz)"
-          echo "::set-output name=mwalib_path::$(ls mwalib--*.bottle*.tar.gz)"
-          echo "::set-output name=erfa_path::$(ls erfa--*.bottle*.tar.gz)"
+          # echo "casacore_data_path=$(ls casacore-data--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
+          # echo "casacore_path=$(ls casacore--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
+          echo "aoflagger_path=$(ls aoflagger--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
+          # echo "mwalib_path=$(ls mwalib--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
+          echo "erfa_path=$(ls erfa--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         id: create_release
@@ -65,26 +65,26 @@ jobs:
             Brew bottles for casacore / aoflagger
           draft: false
           prerelease: false
-      - name: Upload Casacore-data Release Asset
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.archive_names.outputs.casacore_data_path }}
-          asset_name: ${{ steps.archive_names.outputs.casacore_data_path }}
-          asset_content_type: application/gzip
-      - name: Upload Casacore Release Asset
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.archive_names.outputs.casacore_path }}
-          asset_name: ${{ steps.archive_names.outputs.casacore_path }}
-          asset_content_type: application/gzip
+      # - name: Upload Casacore-data Release Asset
+      #   continue-on-error: true
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ${{ steps.archive_names.outputs.casacore_data_path }}
+      #     asset_name: ${{ steps.archive_names.outputs.casacore_data_path }}
+      #     asset_content_type: application/gzip
+      # - name: Upload Casacore Release Asset
+      #   continue-on-error: true
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ${{ steps.archive_names.outputs.casacore_path }}
+      #     asset_name: ${{ steps.archive_names.outputs.casacore_path }}
+      #     asset_content_type: application/gzip
       - name: Upload Aoflagger Release Asset
         uses: actions/upload-release-asset@v1
         continue-on-error: true
@@ -95,16 +95,16 @@ jobs:
           asset_path: ${{ steps.archive_names.outputs.aoflagger_path }}
           asset_name: ${{ steps.archive_names.outputs.aoflagger_path }}
           asset_content_type: application/gzip
-      - name: Upload MWALib Release Asset
-        uses: actions/upload-release-asset@v1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.archive_names.outputs.mwalib_path }}
-          asset_name: ${{ steps.archive_names.outputs.mwalib_path }}
-          asset_content_type: application/gzip
+      # - name: Upload MWALib Release Asset
+      #   uses: actions/upload-release-asset@v1
+      #   continue-on-error: true
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ${{ steps.archive_names.outputs.mwalib_path }}
+      #     asset_name: ${{ steps.archive_names.outputs.mwalib_path }}
+      #     asset_content_type: application/gzip
       - name: Upload ERFA Release Asset
         uses: actions/upload-release-asset@v1
         continue-on-error: true

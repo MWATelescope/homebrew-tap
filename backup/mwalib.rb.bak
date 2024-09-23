@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Mwalib < Formula
   desc "MWA library to read raw visibilities, voltages and metadata"
   homepage "https://github.com/MWATelescope/mwalib"
@@ -49,6 +51,6 @@ int main(int argc, char *argv[]) {
       ENV.cc, "-O3", testpath / "mwalib_test.c", "-o", "mwalib_test", "-I", include, "-L", lib, "-lmwalib"
     system "./mwalib_test"
 
-    system "python3" + "-c" + "import mwalib" if build.with? "python"
+    system "python3-cimport", "mwalib" if build.with? "python"
   end
 end
