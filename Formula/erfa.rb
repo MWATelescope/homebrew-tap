@@ -1,8 +1,8 @@
 class Erfa < Formula
   desc "Essential Routines for Fundamental Astronomy"
   homepage "https://github.com/liberfa/erfa"
-  url "https://github.com/liberfa/erfa/releases/download/v2.0.0/erfa-2.0.0.tar.gz"
-  sha256 "75cb0a2cc1561d24203d9d0e67c21f105e45a70181d57f158e64a46a50ccd515"
+  url "https://github.com/liberfa/erfa/releases/download/v2.0.1/erfa-2.0.1.tar.xz"
+  sha256 "45111f0addf6ef69345aaf093bd054705b41ac2db7541dd3f0e105362c8e20e4"
   license "MPL-2.0"
 
   depends_on "gcc" => :test
