@@ -36,7 +36,7 @@ jobs:
 
       - run: brew test-bot --only-tap-syntax
 
-      - run: brew test-bot --only-formulae Formula/aoflagger.rb Formula/erfa.rb Formula/birli.rb
+      - run: brew test-bot --only-formulae Formula/aoflagger.rb Formula/birli.rb
 
       - name: Get version number from current date
         id: date
@@ -49,7 +49,6 @@ jobs:
           ls -alR ..
           {
             echo "aoflagger_path=$(ls aoflagger--*.bottle*.tar.gz)"
-            echo "erfa_path=$(ls erfa--*.bottle*.tar.gz)"
             echo "birli_path=$(ls birli--*.bottle*.tar.gz)"
           } >> "$GITHUB_OUTPUT"
 
@@ -65,26 +64,6 @@ jobs:
             Brew bottles for casacore / aoflagger
           draft: false
           prerelease: false
-      # - name: Upload Casacore-data Release Asset
-      #   continue-on-error: true
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ${{ steps.archive_names.outputs.casacore_data_path }}
-      #     asset_name: ${{ steps.archive_names.outputs.casacore_data_path }}
-      #     asset_content_type: application/gzip
-      # - name: Upload Casacore Release Asset
-      #   continue-on-error: true
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ${{ steps.archive_names.outputs.casacore_path }}
-      #     asset_name: ${{ steps.archive_names.outputs.casacore_path }}
-      #     asset_content_type: application/gzip
       - name: Upload Aoflagger Release Asset
         uses: actions/upload-release-asset@v1
         continue-on-error: true
@@ -94,26 +73,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.archive_names.outputs.aoflagger_path }}
           asset_name: ${{ steps.archive_names.outputs.aoflagger_path }}
-          asset_content_type: application/gzip
-      # - name: Upload MWALib Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   continue-on-error: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ${{ steps.archive_names.outputs.mwalib_path }}
-      #     asset_name: ${{ steps.archive_names.outputs.mwalib_path }}
-      #     asset_content_type: application/gzip
-      - name: Upload ERFA Release Asset
-        uses: actions/upload-release-asset@v1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.archive_names.outputs.erfa_path }}
-          asset_name: ${{ steps.archive_names.outputs.erfa_path }}
           asset_content_type: application/gzip
       - name: Upload Birli Release Asset
         uses: actions/upload-release-asset@v1
