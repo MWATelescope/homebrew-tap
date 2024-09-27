@@ -47,10 +47,8 @@ jobs:
         run: |
           pwd
           ls -alR ..
-          {
-            echo "aoflagger_path=$(ls aoflagger--*.bottle*.tar.gz)"
-            echo "birli_path=$(ls birli--*.bottle*.tar.gz)"
-          } >> "$GITHUB_OUTPUT"
+          echo "aoflagger_path=$(ls aoflagger--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
+          echo "birli_path=$(ls birli--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         id: create_release
