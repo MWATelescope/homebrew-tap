@@ -6,11 +6,8 @@ class Aoflagger < Formula
   sha256 "9560b7381b68f37d842599f222a8aa2a5d3d3d501d1277471e1a0ba3d7b2aeba"
   license "GPL-3.0-only"
 
-  # head do
-  #   url "https://gitlab.com/aroffringa/aoflagger.git"
-  # end
-
   option "with-python", "Build Python bindings"
+  option "with-hdf5", "Build with hdf5"
 
   depends_on "cmake" => :build
 
@@ -22,8 +19,8 @@ class Aoflagger < Formula
   depends_on "lapack"
   depends_on "libpng"
   depends_on "lua@5.3"
-  depends_on "pybind11"
-  depends_on "python@3.9"
+  depends_on "hdf5" if build.with?("hdf5")
+  depends_on "pybind11" if build.with?("python")
 
   def install
     build_type = "Release"
@@ -32,7 +29,7 @@ class Aoflagger < Formula
       cmake_args.delete "-DCMAKE_BUILD_TYPE=None"
       cmake_args << "-DCMAKE_BUILD_TYPE=#{build_type}"
       cmake_args << "-DPORTABLE=False"
-      system "cmake", "../..", *cmake_args, *std_cmake_args
+      system "cmake", "../..", *cmake_args
       system "make", "install"
     end
   end
