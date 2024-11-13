@@ -10,17 +10,17 @@ class Aoflagger < Formula
   option "with-hdf5", "Build with hdf5"
 
   depends_on "cmake" => :build
+  depends_on "pybind11" => :build if build.with?("python")
 
   depends_on "boost"
   depends_on "boost-build"
-  depends_on "casacore/tap/casacore"
   depends_on "cfitsio"
   depends_on "fftw"
   depends_on "lapack"
   depends_on "libpng"
   depends_on "lua@5.3"
-  depends_on "hdf5" if build.with?("hdf5")
-  depends_on "pybind11" if build.with?("python")
+  depends_on "mwatelescope/tap/casacore"
+  depends_on "hdf5" => :optional
 
   def install
     build_type = "Release"
@@ -29,6 +29,7 @@ class Aoflagger < Formula
       cmake_args.delete "-DCMAKE_BUILD_TYPE=None"
       cmake_args << "-DCMAKE_BUILD_TYPE=#{build_type}"
       cmake_args << "-DPORTABLE=False"
+      cmake_args << "-DUSE_HDF5=ON" << "-DHDF5_ROOT_DIR=#{HOMEBREW_PREFIX}" if build.with?("hdf5")
       system "cmake", "../..", *cmake_args
       system "make", "install"
     end
