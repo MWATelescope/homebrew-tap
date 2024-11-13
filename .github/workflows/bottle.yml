@@ -39,16 +39,16 @@ jobs:
       - run: brew test-bot --only-formulae Formula/aoflagger.rb Formula/birli.rb
 
       - name: Get version number from current date
-        id: date
-        run: echo "date=$(date +'v%Y.%m.%d.%H.%M')" >> "$GITHUB_OUTPUT"
+        run: echo "DATE=$(date +'v%Y.%m.%d.%H.%M')" | tee -a "$GITHUB_ENV"
 
       - name: get archive names
         id: archive_names
         run: |
-          pwd
-          ls -alR ..
-          echo "aoflagger_path=$(ls aoflagger--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
-          echo "birli_path=$(ls birli--*.bottle*.tar.gz)" >> "$GITHUB_OUTPUT"
+          for package in aoflagger birli; do
+            brew install --build-bottle Formula/$package.rb
+            brew bottle --json Formula/$package.rb
+            echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
+          done
 
       - name: Create Release
         id: create_release
@@ -56,8 +56,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.date.outputs.date }}
-          release_name: Release ${{ steps.date.outputs.date }}
+          tag_name: ${{ env.DATE }}
+          release_name: Release ${{ env.DATE }}
           body: |
             Brew bottles for casacore / aoflagger
           draft: false
@@ -69,8 +69,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.archive_names.outputs.aoflagger_path }}
-          asset_name: ${{ steps.archive_names.outputs.aoflagger_path }}
+          asset_path: ${{ env.aoflagger_path }}
+          asset_name: ${{ env.aoflagger_path }}
           asset_content_type: application/gzip
       - name: Upload Birli Release Asset
         uses: actions/upload-release-asset@v1
@@ -79,6 +79,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.archive_names.outputs.birli_path }}
-          asset_name: ${{ steps.archive_names.outputs.birli_path }}
+          asset_path: ${{ env.birli_path }}
+          asset_name: ${{ env.birli_path }}
           asset_content_type: application/gzip
