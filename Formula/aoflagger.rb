@@ -11,14 +11,14 @@ class Aoflagger < Formula
 
   depends_on "cmake" => :build
   depends_on "pybind11" => :build if build.with?("python")
+  depends_on "boost-build" => :build
 
   depends_on "boost"
-  depends_on "boost-build"
   depends_on "cfitsio"
   depends_on "fftw"
   depends_on "lapack"
   depends_on "libpng"
-  depends_on "lua@5.3"
+  depends_on "lua@5.4"
   depends_on "mwatelescope/tap/casacore"
   depends_on "hdf5" => :optional
 

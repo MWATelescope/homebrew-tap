@@ -20,11 +20,11 @@ class Casacore < Formula
   depends_on "wcslib"
 
   if build.with?("python")
-    # if this line changes https://github.com/Homebrew/homebrew-core/blob/914f3d69b312903688270b42730b37a5f02a241a/Formula/b/boost-python3.rb#L26C14-L26C27
+    # if this line changes https://github.com/Homebrew/homebrew-core/blob/dc61aaab304abbb8ef863eed3313b6661846f79e/Formula/b/boost-python3.rb#L28
     # then this will break.
     # if you change this line, you should also change the line below:
-    # python_exe = which("python3.12")
-    depends_on "python@3.12"
+    # python_exe = which("python3.13")
+    depends_on "python@3.13"
     depends_on "numpy"
     depends_on "boost-python3"
   end
@@ -46,7 +46,7 @@ class Casacore < Formula
       # cmake_args << "-DBoost_NO_BOOST_CMAKE=ON"
       cmake_args << "-DDATA_DIR=#{casacore_data}"
       if build.with?("python")
-        python_exe = which("python3.12")
+        python_exe = which("python3.13")
         cmake_args << "-DPython3_EXECUTABLE=#{python_exe}"
         numpy_include = `#{python_exe} -c "import numpy; print(numpy.get_include())"`.strip
         cmake_args << "-DPython3_NumPy_INCLUDE_DIR=#{numpy_include}"
