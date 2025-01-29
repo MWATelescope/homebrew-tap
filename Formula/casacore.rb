@@ -9,7 +9,7 @@ class Casacore < Formula
 
   depends_on "cmake" => :build
   depends_on "casacore/tap/casacore-data"
-  depends_on "cfitsio"
+  depends_on "cfitsio_reentrant"
   depends_on "fftw"
   depends_on "gcc" # for gfortran
   depends_on "gsl"

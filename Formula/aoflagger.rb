@@ -9,12 +9,12 @@ class Aoflagger < Formula
   option "with-python", "Build Python bindings"
   option "with-hdf5", "Build with hdf5"
 
+  depends_on "boost-build" => :build
   depends_on "cmake" => :build
   depends_on "pybind11" => :build if build.with?("python")
-  depends_on "boost-build" => :build
 
   depends_on "boost"
-  depends_on "cfitsio"
+  depends_on "cfitsio_reentrant"
   depends_on "fftw"
   depends_on "lapack"
   depends_on "libpng"

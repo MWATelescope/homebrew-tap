@@ -11,7 +11,7 @@ class Birli < Formula
   depends_on "rust" => :build
   depends_on "gcc" => :test
   depends_on "aoflagger"
-  depends_on "cfitsio"
+  depends_on "cfitsio_reentrant"
 
   def install
     with_env(
