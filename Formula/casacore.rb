@@ -15,10 +15,10 @@ class Casacore < Formula
   depends_on "hdf5"
   depends_on "mwatelescope/tap/casacore-data"
   depends_on "mwatelescope/tap/cfitsio_reentrant"
+  depends_on "mwatelescope/tap/wcslib"
   depends_on "ncurses"
   depends_on "openblas"
   depends_on "readline"
-  depends_on "wcslib"
 
   if build.with?("python")
     # if this line changes https://github.com/Homebrew/homebrew-core/blob/dc61aaab304abbb8ef863eed3313b6661846f79e/Formula/b/boost-python3.rb#L28
