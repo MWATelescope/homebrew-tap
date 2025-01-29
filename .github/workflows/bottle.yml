@@ -34,22 +34,31 @@ jobs:
 
       - run: brew test-bot --only-setup Formula/*
 
-      - run: brew test-bot --only-tap-syntax
-
-      - run: brew test-bot --only-formulae Formula/aoflagger.rb Formula/birli.rb
+      - name: test-bot
+        run: |
+          brew tap mwatelescope/tap
+          # TODO: casacore aoflagger birli
+          for package in cfitsio_reentrant casacore-data; do
+            brew test-bot mwatelescope/tap/$package
+          done
+      - name: audit
+        run: |
+          for package in cfitsio_reentrant casacore-data casacore aoflagger birli; do
+            brew audit mwatelescope/tap/$package
+          done
 
       - name: Get version number from current date
         run: echo "DATE=$(date +'v%Y.%m.%d.%H.%M')" | tee -a "$GITHUB_ENV"
-
       - name: get archive names
         id: archive_names
         run: |
           # build casacore source first
-          brew install --build-from-source Formula/casacore.rb
-          brew install --build-from-source Formula/cfitsio_reentrant.rb
-          for package in aoflagger birli; do
-            brew install --build-bottle Formula/$package.rb
-            brew bottle --json Formula/$package.rb
+          brew uninstall --ignore-dependencies --force cfitsio || true
+          for package in cfitsio_reentrant casacore-data casacore aoflagger birli; do
+            brew uninstall --ignore-dependencies --force $package || true
+            brew install --formula --build-bottle mwatelescope/tap/$package
+            brew postinstall mwatelescope/tap/$package
+            brew bottle --json mwatelescope/tap/$package
             echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
           done
 
@@ -85,3 +94,41 @@ jobs:
           asset_path: ${{ env.birli_path }}
           asset_name: ${{ env.birli_path }}
           asset_content_type: application/gzip
+
+# todo:
+# - run: brew test-bot --only-formulae Formula/cfitsio_reentrant.rb Formula/casacore-data.rb
+# Error: Unexpected bottle tarball: /Users/runner/work/homebrew-tap/homebrew-tap/cfitsio_reentrant--4.5.0_1.arm64_sonoma.bottle.1.tar.gz
+# Error: Unexpected bottle JSON: /Users/runner/work/homebrew-tap/homebrew-tap/cfitsio_reentrant--4.5.0_1.arm64_sonoma.bottle.json
+#
+# - run: brew test-bot --only-formulae Formula/casacore.rb
+# Error: Failed to load cask: Formula/casacore-data.rb
+# Cask 'casacore-data' is unreadable: wrong constant name #<Class:0x00000001399f8c08>
+# Error: Failed to load cask: Formula/casacore.rb
+# Cask 'casacore' is unreadable: wrong constant name #<Class:0x0000000139ab83f0>
+# Warning: Treating Formula/casacore.rb as a formula.
+# Error: The `brew link` step did not complete successfully
+# The formula built, but is not symlinked into /opt/homebrew
+# Could not symlink include/fitsio.h
+# Target /opt/homebrew/include/fitsio.h
+# is a symlink belonging to cfitsio_reentrant. You can unlink it:
+#   brew unlink cfitsio_reentrant
+# To force the link and overwrite all conflicting files:
+#   brew link --overwrite cfitsio
+# To list all files that would be deleted:
+#   brew link --overwrite cfitsio --dry-run
+# Possible conflicting files are:
+# /opt/homebrew/include/fitsio.h -> /opt/homebrew/Cellar/cfitsio_reentrant/4.5.0_1/include/fitsio.h
+# /opt/homebrew/include/fitsio2.h -> /opt/homebrew/Cellar/cfitsio_reentrant/4.5.0_1/include/fitsio2.h
+# /opt/homebrew/include/longnam.h -> /opt/homebrew/Cellar/cfitsio_reentrant/4.5.0_1/include/longnam.h
+
+
+
+# TODO:
+# - run: brew test-bot --only-tap-syntax
+#  Error: 1 failed step!
+# brew style mwatelescope/tap
+# /opt/homebrew/Cellar/actionlint/1.7.7: 8 files, 5.0MB
+# ../../../../../opt/homebrew/Library/Taps/mwatelescope/homebrew-tap/.github/workflows/bottle.yml:39:9: shellcheck reported issue in this script: SC1089:error:1:100: Parsing stopped here. Is this keyword correctly matched up? [shellcheck]
+#    |
+# 39 |       - run:
+#    |         ^~~~

@@ -5,13 +5,13 @@ class Birli < Formula
   sha256 "4b0a14f6bbd12e292d04eaa9791597a6d08f9fa044c9ba6dba8e06f796544bb9"
   license "MPL-2.0"
 
-  head "https://github.com/MWATelescope/Birli.git"
+  head "https://github.com/MWATelescope/Birli.git", branch: "main"
 
   depends_on "automake" => :build
   depends_on "rust" => :build
   depends_on "gcc" => :test
   depends_on "aoflagger"
-  depends_on "cfitsio_reentrant"
+  depends_on "mwatelescope/tap/cfitsio_reentrant"
 
   def install
     with_env(
@@ -22,5 +22,10 @@ class Birli < Formula
       system "cargo", "install", "--path=.", "--locked"
     end
     bin.install "target/release/birli"
+  end
+
+  test do
+    system "cargo", "test", "--locked", "--release"
+    system "target/release/birli", "--help"
   end
 end

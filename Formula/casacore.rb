@@ -1,19 +1,20 @@
+# source: https://github.com/casacore/homebrew-tap/blob/e104598bbfe44e17a07d59c8bdb6a3559b527c67/Formula/casacore.rb
 class Casacore < Formula
   desc "Suite of C++ libraries for radio astronomy data processing"
   homepage "https://github.com/casacore/casacore"
   url "https://github.com/casacore/casacore/archive/refs/tags/v3.6.1.tar.gz"
   sha256 "480d3340fa17e9ba67f18efbaff4bbb272a01d1f400d2295c0b6c86eb7abcf82"
-  head "https://github.com/casacore/casacore.git"
+  head "https://github.com/casacore/casacore.git", branch: "master"
 
   option "without-python", "Build without Python bindings"
 
   depends_on "cmake" => :build
-  depends_on "casacore/tap/casacore-data"
-  depends_on "cfitsio_reentrant"
   depends_on "fftw"
   depends_on "gcc" # for gfortran
   depends_on "gsl"
   depends_on "hdf5"
+  depends_on "mwatelescope/tap/casacore-data"
+  depends_on "mwatelescope/tap/cfitsio_reentrant"
   depends_on "ncurses"
   depends_on "openblas"
   depends_on "readline"
