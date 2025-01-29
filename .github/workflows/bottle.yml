@@ -44,6 +44,9 @@ jobs:
       - name: get archive names
         id: archive_names
         run: |
+          # build casacore source first
+          brew install --build-from-source Formula/casacore.rb
+          brew install --build-from-source Formula/cfitsio_reentrant.rb
           for package in aoflagger birli; do
             brew install --build-bottle Formula/$package.rb
             brew bottle --json Formula/$package.rb
