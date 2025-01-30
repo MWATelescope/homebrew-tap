@@ -11,6 +11,7 @@ class CasacoreData < Formula
   homepage "https://github.com/casacore/casacore"
   # curl ftp://anonymous@ftp.astron.nl/outgoing/Measures/
   url "ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20250128-160001.ztar", using: ZtarDownloadStrategy
+  version "20250128-160001"
   # curl -s 'ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20250128-160001.ztar' | sha256 -
   sha256 "5835e3f5458d8f88fd057044a891d26a5cbfdec9a865967b1189d4fd52140c80"
   head "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar", using: ZtarDownloadStrategy

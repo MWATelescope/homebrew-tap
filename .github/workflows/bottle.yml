@@ -5,6 +5,8 @@ on:
   push:
     branches:
     - main
+env:
+  package_order: "cfitsio_reentrant casacore-data wcslib casacore aoflagger birli"
 jobs:
   create_release:
     runs-on: ubuntu-latest
@@ -85,10 +87,10 @@ jobs:
       - name: add tap
         run: brew tap mwatelescope/tap
 
-      - name: bottle cfitsio_reentrant casacore-data wcslib casacore
+      - name: bottle
         continue-on-error: true
         run: |
-          for package in cfitsio_reentrant casacore-data wcslib casacore aoflagger birli; do
+          for package in ${{ env.package_order }}; do
             brew uninstall --ignore-dependencies --force $package || true
             brew install --formula --build-bottle mwatelescope/tap/$package
             brew bottle --json --root-url="${{ needs.create_release.outputs.root_url }}" mwatelescope/tap/$package
@@ -209,95 +211,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-          for package in cfitsio_reentrant casacore-data; do
+          for package in ${{ env.package_order }}; do
             git diff ./Formula/${package}.rb
-            git add ./Formula/${package}.rb
           done
-          git commit -m "[skip ci] Update bottle block for cfitsio_reentrant and casacore-data"
+          git add ./Formula/*.rb
+          git commit -m "[skip ci] Update bottle blocks"
           git push origin main
-
-      # - name: casacore
-      # run: |
-      #   for package in casacore; do
-      #     brew uninstall --ignore-dependencies --force $package || true
-      #     brew install --formula --build-bottle mwatelescope/tap/$package
-      #     brew postinstall mwatelescope/tap/$package
-      #     brew bottle --json mwatelescope/tap/$package
-      #     brew bottle --merge --write --no-commit --root-url="https://github.com/mwatelescope/homebrew-tap/releases/download/${DATE}" ./${package}--*.bottle.json
-      #     git diff ./Formula/${package}.rb
-      #     git add ./Formula/${package}.rb
-      #     echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
-      #   done
-      #   git commit -m "[skip ci] Update bottle block for casacore"
-      #   git push origin main
-
-      # - name: get archive names
-      #   id: archive_names
-      #   run: |
-      #     # next time this breaks:
-      #     # - publish only bottles where all dependencies are bottled
-      #     # - update the bottle do block in the formula
-      #     # todo: wcslib casacore aoflagger birli
-      #     for package in cfitsio_reentrant casacore-data; do
-      #       brew uninstall --ignore-dependencies --force $package || true
-      #       brew install --formula --build-bottle mwatelescope/tap/$package
-      #       brew postinstall mwatelescope/tap/$package
-      #       brew bottle --json mwatelescope/tap/$package
-      #       echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
-      #     done
-
-      # - name: Upload Aoflagger Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   continue-on-error: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ${{ env.aoflagger_path }}
-      #     asset_name: ${{ env.aoflagger_path }}
-      #     asset_content_type: application/gzip
-      # - name: Upload Birli Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   continue-on-error: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ${{ env.birli_path }}
-      #     asset_name: ${{ env.birli_path }}
-      #     asset_content_type: application/gzip
-
-# - name: test-bot
-#   run: |
-#     for package in casacore-data casacore aoflagger birli; do
-#       brew test-bot mwatelescope/tap/$package
-#     done
-# - name: audit
-#   run: |
-#     for package in casacore-data casacore aoflagger birli; do
-#       brew audit mwatelescope/tap/$package
-#     done
-
-
-# TODO:
-# - run: brew test-bot mwatelescope/tap/wcslib
-# or
-# - run: brew test-bot mwatelescope/tap/cfitsio_reentrant
-# gives
-# ==> brew linkage --test mwatelescope/tap/wcslib
-# ==> FAILED
-# Full linkage --test mwatelescope/tap/wcslib output
-#   Broken dependencies:
-#     /opt/homebrew/opt/cfitsio/lib/libcfitsio.10.dylib (cfitsio)
-# Truncated linkage --test mwatelescope/tap/wcslib output
-#   Error:   /opt/homebrew/opt/cfitsio/lib/libcfitsio.10.dylib (cfitsio)
-
-# TODO:
-# - run: brew test-bot --only-tap-syntax
-#  Error: 1 failed step!
-# brew style mwatelescope/tap
-# /opt/homebrew/Cellar/actionlint/1.7.7: 8 files, 5.0MB
-# ../../../../../opt/homebrew/Library/Taps/mwatelescope/homebrew-tap/.github/workflows/bottle.yml:39:9: shellcheck reported issue in this script: SC1089:error:1:100: Parsing stopped here. Is this keyword correctly matched up? [shellcheck]
-#    |
-# 39 |       - run:
-#    |         ^~~~
