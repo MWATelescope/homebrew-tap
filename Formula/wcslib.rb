@@ -12,12 +12,11 @@ class Wcslib < Formula
   end
 
   bottle do
-    sha256 cellar: :any,                 arm64_sequoia: "9b4c893d06fdc0f35e6d0068cd2c0f8e310bcc21fcd80242c8096895ef6bbdc5"
-    sha256 cellar: :any,                 arm64_sonoma:  "9d19f46e3c4eccaf8a8f0e47b15650a0d597fb7b1a0e41523f98c225733f79cd"
-    sha256 cellar: :any,                 arm64_ventura: "a8a2219881ba618ed874d2d8e398c6014e0acc2a8116f2786fa44354950d0050"
-    sha256 cellar: :any,                 sonoma:        "1e11d5347b5aabd5a8be7b58f255b296b32a27daea37dd6f1c96d58e05a099f9"
-    sha256 cellar: :any,                 ventura:       "7ad6caa1fcc73ee40853218467f7c69063672b81c9f57168c2fc3fe36a352581"
-    sha256 cellar: :any_skip_relocation, x86_64_linux:  "5b4796b96042e9131506aaacb702c1e6cb372fddc463b0e328b5f46ea49bf342"
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2025.01.30.06.40"
+    rebuild 1
+    sha256 cellar: :any, arm64_sequoia: "a7b0a39634f7c1e13231adc1f2e9582c71aa5524176aff90e2a60b3f9569328d"
+    sha256 cellar: :any, arm64_sonoma:  "41974cc1e040299d957c83c03f91cc629c6ffa218e8bf16af98f706b991218cd"
+    sha256 cellar: :any, ventura:       "b419a545e84f1cf1570e81c18ed88c0a110f127bb60541591e97fba58648c1d3"
   end
 
   depends_on "mwatelescope/tap/cfitsio_reentrant"

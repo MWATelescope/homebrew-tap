@@ -6,6 +6,14 @@ class Aoflagger < Formula
   sha256 "9560b7381b68f37d842599f222a8aa2a5d3d3d501d1277471e1a0ba3d7b2aeba"
   license "GPL-3.0-only"
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2025.01.30.06.40"
+    rebuild 1
+    sha256 arm64_sequoia: "c5647904c8feff543584ae1ce7dde91aa996426c7d931fa67e9bf36c9b82839f"
+    sha256 arm64_sonoma:  "707f69f08caf600f6f62f21a3dc219dba061c3f50354b88f67f5aa2f076449c5"
+    sha256 ventura:       "cddb746fd547739c0bfafd30966357a9f3b53ac35ee1ed0410a13f9e91563a39"
+  end
+
   option "with-python", "Build Python bindings"
   option "with-hdf5", "Build with hdf5"
 
