@@ -11,15 +11,11 @@ jobs:
     outputs:
       release: ${{ steps.version.outputs.release }}
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      root_url: ${{ steps.get_root.outputs.root_url }}
     steps:
       - name: Get version number from current date
         id: version
         run: echo "release=$(date +'v%Y.%m.%d.%H.%M')" | tee -a "$GITHUB_OUTPUT"
-      # run: echo "release=v2025.01.30.00.48" | tee -a "$GITHUB_OUTPUT"
-      # - name: Create Release
-      #   id: create_release
-      #   run: echo "upload_url=https://uploads.github.com/repos/MWATelescope/homebrew-tap/releases/197480411/assets{?name,label}" | tee -a "$GITHUB_OUTPUT"
-      # todo: re-enable this when finished testing v2025.01.30.00.48
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -32,6 +28,9 @@ jobs:
             Brew bottles for cfitsio_reentrant, casacore-data, wcslib, casacore, aoflagger, birli
           draft: false
           prerelease: false
+      - name: Get Root URL
+        id: get_root
+        run: echo "root_url=${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.version.outputs.release }}" | tee -a "$GITHUB_OUTPUT"
 
   style:
     runs-on: macos-latest
@@ -87,19 +86,17 @@ jobs:
         run: brew tap mwatelescope/tap
 
       - name: bottle cfitsio_reentrant casacore-data wcslib casacore
+        continue-on-error: true
         run: |
-          for package in cfitsio_reentrant casacore-data wcslib casacore; do
+          for package in cfitsio_reentrant casacore-data wcslib casacore aoflagger birli; do
             brew uninstall --ignore-dependencies --force $package || true
             brew install --formula --build-bottle mwatelescope/tap/$package
-            brew bottle --json --root-url="https://github.com/mwatelescope/homebrew-tap/releases/download/${{ needs.create_release.outputs.release }}" mwatelescope/tap/$package
+            brew bottle --json --root-url="${{ needs.create_release.outputs.root_url }}" mwatelescope/tap/$package
             echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
             # this deals with https://github.com/orgs/Homebrew/discussions/4541
             # e.g. if path is hello--2.12_98.arm64_ventura.bottle.1.tar.gz, filename should be hello-2.12_98.arm64_ventura.bottle.1.tar.gz
             echo "${package}_filename=$(ls ${package}--*.bottle*.tar.gz | sed 's/--/-/')" | tee -a "$GITHUB_ENV"
           done
-
-          # update bottle block in the formula
-          brew bottle --merge --write --no-commit ./*.bottle.json
 
       - name: Upload cfitsio_reentrant Release Asset
         uses: actions/upload-release-asset@v1.0.1
@@ -141,8 +138,30 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ${{ env.casacoe_path }}
-          asset_name: ${{ env.casacoe_filename }}
+          asset_path: ${{ env.casacore_path }}
+          asset_name: ${{ env.casacore_filename }}
+          asset_content_type: application/gzip
+
+      - name: Upload aoflagger Release Asset
+        uses: actions/upload-release-asset@v1.0.1
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ${{ env.aoflagger_path }}
+          asset_name: ${{ env.aoflagger_filename }}
+          asset_content_type: application/gzip
+
+      - name: Upload birli Release Asset
+        uses: actions/upload-release-asset@v1.0.1
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ${{ env.birli_path }}
+          asset_name: ${{ env.birli_filename }}
           asset_content_type: application/gzip
 
       - name: upload bottle artifacts
