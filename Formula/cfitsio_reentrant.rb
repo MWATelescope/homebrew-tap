@@ -12,11 +12,11 @@ class CfitsioReentrant < Formula
   end
 
   bottle do
-    root_url "https://github.com/mwatelescope/homebrew-tap/releases/download/v2025.01.30.03.55"
-    rebuild 2
-    sha256 cellar: :any, arm64_sequoia: "835ed44fb32dbd02967698a159377ea53cd2125a7c4666fbf806daf125512c5a"
-    sha256 cellar: :any, arm64_sonoma:  "6afb2ac344ad831541beeb2f44f96d56ce394889ad5967733ec52d98837b6610"
-    sha256 cellar: :any, ventura:       "9d0f090d15f6597d968c89d21965cdfb584d45744f4c21ada1521f1ddbf476e1"
+    root_url "https://github.com/mwatelescope/homebrew-tap/releases/download/v2025.01.30.04.09"
+    rebuild 3
+    sha256 cellar: :any, arm64_sequoia: "76e94107d51cc449d08990bb4c3f7ba41def20edd05aaf932ec4bafbcce7326c"
+    sha256 cellar: :any, arm64_sonoma:  "c82726a7fea8aa3ff8ca1545412ff532866252078d2a839ee1f4a2aab59e99db"
+    sha256 cellar: :any, ventura:       "000e6a3d8dbd9afaf420e2c75c408177d9dd46772177afc2e48b3297e459b5af"
   end
 
   depends_on "cmake" => :build
