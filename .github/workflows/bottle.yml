@@ -6,11 +6,35 @@ on:
     branches:
     - main
 jobs:
-  test-bot:
-    strategy:
-      matrix:
-        os: [macOS-latest]
-    runs-on: ${{ matrix.os }}
+  create_release:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.version.outputs.release }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Get version number from current date
+        id: version
+        run: echo "release=$(date +'v%Y.%m.%d.%H.%M')" | tee -a "$GITHUB_OUTPUT"
+      # run: echo "release=v2025.01.30.00.48" | tee -a "$GITHUB_OUTPUT"
+      # - name: Create Release
+      #   id: create_release
+      #   run: echo "upload_url=https://uploads.github.com/repos/MWATelescope/homebrew-tap/releases/197480411/assets{?name,label}" | tee -a "$GITHUB_OUTPUT"
+      # todo: re-enable this when finished testing v2025.01.30.00.48
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ steps.version.outputs.release }}
+          release_name: Release ${{ steps.version.outputs.release }}
+          body: |
+            Brew bottles for cfitsio_reentrant, casacore-data, wcslib, casacore, aoflagger, birli
+          draft: false
+          prerelease: false
+
+  style:
+    runs-on: macos-latest
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
@@ -33,69 +57,151 @@ jobs:
       - run: brew test-bot --only-cleanup-before Formula/*
 
       - run: brew test-bot --only-setup Formula/*
+  bottle1:
+    strategy:
+      matrix:
+        os:
+          # - macos-13
+          # - macos-14
+          # - macos-15
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    needs: create_release
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Cache Homebrew Bundler RubyGems
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ runner.os }}-rubygems-
+
+      - name: Install Homebrew Bundler RubyGems
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: brew install-bundler-gems
 
       - name: add tap
         run: brew tap mwatelescope/tap
-      # - name: test-bot
-      #   run: |
-      #     for package in casacore-data casacore aoflagger birli; do
-      #       brew test-bot mwatelescope/tap/$package
-      #     done
-      # - name: audit
-      #   run: |
-      #     for package in casacore-data casacore aoflagger birli; do
-      #       brew audit mwatelescope/tap/$package
-      #     done
 
-      - name: Get version number from current date
-        run: echo "DATE=$(date +'v%Y.%m.%d.%H.%M')" | tee -a "$GITHUB_ENV"
-      - name: get archive names
-        id: archive_names
+      - name: bottle cfitsio_reentrant and casacore-data
         run: |
-          # next time this breaks:
-          # - publish only bottles where all dependencies are bottled
-          # - update the bottle do block in the formula
-          # todo: wcslib casacore aoflagger birli
           for package in cfitsio_reentrant casacore-data; do
             brew uninstall --ignore-dependencies --force $package || true
             brew install --formula --build-bottle mwatelescope/tap/$package
             brew postinstall mwatelescope/tap/$package
-            brew bottle --json mwatelescope/tap/$package
+            brew bottle --json --root-url="https://github.com/mwatelescope/homebrew-tap/releases/download/${{ needs.create_release.outputs.release }}" mwatelescope/tap/$package
             echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
           done
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      - name: upload bottle artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ env.DATE }}
-          release_name: Release ${{ env.DATE }}
-          body: |
-            Brew bottles for cfitsio_reentrant, casacore-data, aoflagger, birli
-          draft: false
-          prerelease: false
+          name: bottle1_${{ matrix.os }}
+          path: ./*.bottle.json
+
       - name: Upload cfitsio_reentrant Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1.0.1
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ env.cfitsio_reentrant_path }}
           asset_name: ${{ env.cfitsio_reentrant_path }}
           asset_content_type: application/gzip
+
       - name: Upload casacore-data Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1.0.1
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ env.casacore-data_path }}
           asset_name: ${{ env.casacore-data_path }}
           asset_content_type: application/gzip
+
+  merge1:
+    needs:
+      - create_release
+      - bottle1
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        # with:
+        #   token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Cache Homebrew Bundler RubyGems
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ runner.os }}-rubygems-
+
+      - name: Install Homebrew Bundler RubyGems
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: brew install-bundler-gems
+      - name: download bottle1 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          pattern: bottle1_*
+      - name: add tap
+        run: brew tap mwatelescope/tap
+      - name: Merge bottle do blocks and commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          brew bottle --merge --write --no-commit ./*.bottle.json
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+          for package in cfitsio_reentrant casacore-data; do
+            grep bottle -A10 ./Formula/${package}.rb
+            git diff ./Formula/${package}.rb
+            git add ./Formula/${package}.rb
+          done
+          git commit -m "[skip ci] Update bottle block for cfitsio_reentrant and casacore-data"
+          git push origin main
+
+      # - name: casacore
+      # run: |
+      #   for package in casacore; do
+      #     brew uninstall --ignore-dependencies --force $package || true
+      #     brew install --formula --build-bottle mwatelescope/tap/$package
+      #     brew postinstall mwatelescope/tap/$package
+      #     brew bottle --json mwatelescope/tap/$package
+      #     brew bottle --merge --write --no-commit --root-url="https://github.com/mwatelescope/homebrew-tap/releases/download/${DATE}" ./${package}--*.bottle.json
+      #     git diff ./Formula/${package}.rb
+      #     git add ./Formula/${package}.rb
+      #     echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
+      #   done
+      #   git commit -m "[skip ci] Update bottle block for casacore"
+      #   git push origin main
+
+      # - name: get archive names
+      #   id: archive_names
+      #   run: |
+      #     # next time this breaks:
+      #     # - publish only bottles where all dependencies are bottled
+      #     # - update the bottle do block in the formula
+      #     # todo: wcslib casacore aoflagger birli
+      #     for package in cfitsio_reentrant casacore-data; do
+      #       brew uninstall --ignore-dependencies --force $package || true
+      #       brew install --formula --build-bottle mwatelescope/tap/$package
+      #       brew postinstall mwatelescope/tap/$package
+      #       brew bottle --json mwatelescope/tap/$package
+      #       echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
+      #     done
+
       # - name: Upload Aoflagger Release Asset
       #   uses: actions/upload-release-asset@v1
       #   continue-on-error: true
@@ -116,6 +222,18 @@ jobs:
       #     asset_path: ${{ env.birli_path }}
       #     asset_name: ${{ env.birli_path }}
       #     asset_content_type: application/gzip
+
+# - name: test-bot
+#   run: |
+#     for package in casacore-data casacore aoflagger birli; do
+#       brew test-bot mwatelescope/tap/$package
+#     done
+# - name: audit
+#   run: |
+#     for package in casacore-data casacore aoflagger birli; do
+#       brew audit mwatelescope/tap/$package
+#     done
+
 
 # TODO:
 # - run: brew test-bot mwatelescope/tap/wcslib
