@@ -94,6 +94,9 @@ jobs:
             brew postinstall mwatelescope/tap/$package
             brew bottle --json --root-url="https://github.com/mwatelescope/homebrew-tap/releases/download/${{ needs.create_release.outputs.release }}" mwatelescope/tap/$package
             echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
+            # deals with https://github.com/orgs/Homebrew/discussions/4541
+            # if path is hello--2.12_98.arm64_ventura.bottle.1.tar.gz, filename should be hello-2.12_98.arm64_ventura.bottle.1.tar.gz
+            echo "${package}_filename=$(ls ${package}--*.bottle*.tar.gz | sed 's/--/-/')" | tee -a "$GITHUB_ENV"
           done
 
       - name: upload bottle artifacts
@@ -110,7 +113,7 @@ jobs:
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ env.cfitsio_reentrant_path }}
-          asset_name: ${{ env.cfitsio_reentrant_path }}
+          asset_name: ${{ env.cfitsio_reentrant_filename }}
           asset_content_type: application/gzip
 
       - name: Upload casacore-data Release Asset
@@ -121,7 +124,7 @@ jobs:
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ env.casacore-data_path }}
-          asset_name: ${{ env.casacore-data_path }}
+          asset_name: ${{ env.casacore-data_filename }}
           asset_content_type: application/gzip
 
   merge1:
