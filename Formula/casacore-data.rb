@@ -16,11 +16,11 @@ class CasacoreData < Formula
   head "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar", using: ZtarDownloadStrategy
 
   bottle do
-    root_url "https://github.com/mwatelescope/homebrew-tap/releases/download/v2025.01.30.04.09"
-    rebuild 3
-    sha256 cellar: :any_skip_relocation, arm64_sequoia: "06c9873e18e2999efdbc98dcb37713dc4ef03a67600aa819ec95bcff618db0f3"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "155f29e5775b5789f14531cfb6e75b5f79bf2d00f4ebbb042232f26c81a2804b"
-    sha256 cellar: :any_skip_relocation, ventura:       "deca0a69dbb06e4daedab2d50f605904bdbb1175d86e7425a2b9ae0200d62049"
+    root_url "https://github.com/mwatelescope/homebrew-tap/releases/download/v2025.01.30.04.27"
+    rebuild 4
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "7e0fa7b812f5150bfc80191c03729933164c375f39cbac8aa8a159cf39db1304"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "da7ef9f48f636917c557ee53bf4eb9309e1d4be9f394737dc7cab8cb5627d2fb"
+    sha256 cellar: :any_skip_relocation, ventura:       "79750a1467c42bbf9c0530e393e95e963803cff3b2ea8e91adaae4917bae870a"
   end
 
   option "with-casapy", "Use Mac CASA.App (aka casapy) data directory if found"
