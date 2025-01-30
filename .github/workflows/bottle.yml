@@ -57,7 +57,7 @@ jobs:
       - run: brew test-bot --only-cleanup-before Formula/*
 
       - run: brew test-bot --only-setup Formula/*
-  bottle1:
+  bottle:
     strategy:
       matrix:
         os:
@@ -86,24 +86,20 @@ jobs:
       - name: add tap
         run: brew tap mwatelescope/tap
 
-      - name: bottle cfitsio_reentrant and casacore-data
+      - name: bottle cfitsio_reentrant casacore-data wcslib casacore
         run: |
-          for package in cfitsio_reentrant casacore-data; do
+          for package in cfitsio_reentrant casacore-data wcslib casacore; do
             brew uninstall --ignore-dependencies --force $package || true
             brew install --formula --build-bottle mwatelescope/tap/$package
-            brew postinstall mwatelescope/tap/$package
             brew bottle --json --root-url="https://github.com/mwatelescope/homebrew-tap/releases/download/${{ needs.create_release.outputs.release }}" mwatelescope/tap/$package
             echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
-            # deals with https://github.com/orgs/Homebrew/discussions/4541
-            # if path is hello--2.12_98.arm64_ventura.bottle.1.tar.gz, filename should be hello-2.12_98.arm64_ventura.bottle.1.tar.gz
+            # this deals with https://github.com/orgs/Homebrew/discussions/4541
+            # e.g. if path is hello--2.12_98.arm64_ventura.bottle.1.tar.gz, filename should be hello-2.12_98.arm64_ventura.bottle.1.tar.gz
             echo "${package}_filename=$(ls ${package}--*.bottle*.tar.gz | sed 's/--/-/')" | tee -a "$GITHUB_ENV"
           done
 
-      - name: upload bottle artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: bottle1_${{ matrix.os }}
-          path: ./*.bottle.json
+          # update bottle block in the formula
+          brew bottle --merge --write --no-commit ./*.bottle.json
 
       - name: Upload cfitsio_reentrant Release Asset
         uses: actions/upload-release-asset@v1.0.1
@@ -127,10 +123,38 @@ jobs:
           asset_name: ${{ env.casacore-data_filename }}
           asset_content_type: application/gzip
 
-  merge1:
+      - name: Upload wcslib Release Asset
+        uses: actions/upload-release-asset@v1.0.1
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ${{ env.wcslib_path }}
+          asset_name: ${{ env.wcslib_filename }}
+          asset_content_type: application/gzip
+
+      - name: Upload casacore Release Asset
+        uses: actions/upload-release-asset@v1.0.1
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ${{ env.casacoe_path }}
+          asset_name: ${{ env.casacoe_filename }}
+          asset_content_type: application/gzip
+
+      - name: upload bottle artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottle_${{ matrix.os }}
+          path: ./*.bottle.json
+
+  merge:
     needs:
       - create_release
-      - bottle1
+      - bottle
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -151,11 +175,11 @@ jobs:
       - name: Install Homebrew Bundler RubyGems
         if: steps.cache.outputs.cache-hit != 'true'
         run: brew install-bundler-gems
-      - name: download bottle1 artifacts
+      - name: download bottle artifacts
         uses: actions/download-artifact@v4
         with:
           merge-multiple: true
-          pattern: bottle1_*
+          pattern: bottle_*
       - name: add tap
         run: brew tap mwatelescope/tap
       - name: Merge bottle do blocks and commit
@@ -167,7 +191,6 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
           for package in cfitsio_reentrant casacore-data; do
-            grep bottle -A10 ./Formula/${package}.rb
             git diff ./Formula/${package}.rb
             git add ./Formula/${package}.rb
           done
