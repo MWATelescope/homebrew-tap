@@ -7,6 +7,12 @@ class Birli < Formula
   revision 1
   head "https://github.com/MWATelescope/Birli.git", branch: "main"
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.12.10.45"
+    sha256 cellar: :any, arm64_tahoe:   "0487b1f2d281fdcf6a3791b0073a8fa5c197097b687c4f2d90f69044c147c8cd"
+    sha256 cellar: :any, arm64_sequoia: "8ced7fd6c90e005d7637ea1c2a2015be5e26cad46557bcc69ae629ec4ee3e713"
+  end
+
   depends_on "pkgconf" => :build
   depends_on "rust" => :build
   depends_on "mwatelescope/tap/aoflagger"
