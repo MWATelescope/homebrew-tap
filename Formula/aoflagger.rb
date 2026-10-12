@@ -37,6 +37,7 @@ class Aoflagger < Formula
       cmake_args.delete "-DCMAKE_BUILD_TYPE=None"
       cmake_args << "-DCMAKE_BUILD_TYPE=#{build_type}"
       cmake_args << "-DPORTABLE=False"
+      cmake_args << "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
       cmake_args << "-DUSE_HDF5=ON" << "-DHDF5_ROOT_DIR=#{HOMEBREW_PREFIX}" if build.with?("hdf5")
       system "cmake", "../..", *cmake_args
       system "make", "install"

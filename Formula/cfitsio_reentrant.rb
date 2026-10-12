@@ -29,7 +29,11 @@ class CfitsioReentrant < Formula
   end
 
   def install
-    system "cmake", "-S", ".", "-B", "build", "-DUSE_PTHREADS=1", "-D_REENTRANT=1", *std_cmake_args
+    cmake_args = std_cmake_args
+    cmake_args << "-DUSE_PTHREADS=1"
+    cmake_args << "-D_REENTRANT=1"
+    cmake_args << "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+    system "cmake", "-S", ".", "-B", "build", *cmake_args
     system "cmake", "--build", "build"
     system "cmake", "--install", "build"
 
