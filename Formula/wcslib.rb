@@ -11,6 +11,12 @@ class Wcslib < Formula
     regex(/href=.*?wcslib[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.12.09.34"
+    sha256 cellar: :any, arm64_tahoe:   "2896a57eaf7758f30a476e4f017735c304136fde72419b1b58c34acf29695862"
+    sha256 cellar: :any, arm64_sequoia: "55bf837070ac360cbe8db8d68642b1a3720ba54d1cbb903af190be3e6db153e9"
+  end
+
   depends_on "mwatelescope/tap/cfitsio_reentrant"
 
   def install

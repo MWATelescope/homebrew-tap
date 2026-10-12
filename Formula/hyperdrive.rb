@@ -6,6 +6,12 @@ class Hyperdrive < Formula
   license "MPL-2.0"
   head "https://github.com/MWATelescope/mwa_hyperdrive.git", branch: "main"
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.12.09.34"
+    sha256 cellar: :any, arm64_tahoe:   "204eb61816ffd071c83ff4eef6ff1ad2e1385a119ebf5b78bc0583333a0a2546"
+    sha256 cellar: :any, arm64_sequoia: "c659e1511e8ee36bf1d9f68898fe4ce239750a67f6a63270f1142cae57595417"
+  end
+
   depends_on "cmake" => :build # builds the bundled HDF5 (hdf5-static)
   depends_on "pkgconf" => :build
   depends_on "rust" => :build

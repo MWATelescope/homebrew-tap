@@ -6,6 +6,12 @@ class MwaFeeBeam < Formula
   version "2025.08.06"
   sha256 "a7649c6e03b8128a1de4614c2f363af5fa44f3890ae27bf893d56ca337bc48ee"
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.12.09.34"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "523751746f9892e2127ec3b3a8d4260b2ae5a2ddc74125677b8197d1b140bd9d"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "c1708291f07e47502c3d1657b5256b23561354ebf700601dd975e4139081db0c"
+  end
+
   def install
     pkgshare.install "mwa_full_embedded_element_pattern.h5"
   end
