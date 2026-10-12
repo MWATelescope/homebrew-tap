@@ -2,8 +2,8 @@
 class Casacore < Formula
   desc "Suite of C++ libraries for radio astronomy data processing"
   homepage "https://github.com/casacore/casacore"
-  url "https://github.com/casacore/casacore/archive/refs/tags/v3.6.1.tar.gz"
-  sha256 "480d3340fa17e9ba67f18efbaff4bbb272a01d1f400d2295c0b6c86eb7abcf82"
+  url "https://github.com/casacore/casacore/archive/refs/tags/v3.8.1.tar.gz"
+  sha256 "c8e0f9dfd52fc17c27c91548c222bed0a5874b75989fcaf002f83826db83b446"
   head "https://github.com/casacore/casacore.git", branch: "master"
 
   bottle do
@@ -50,6 +50,7 @@ class Casacore < Formula
       cmake_args << "-DBUILD_PYTHON=OFF" # avoid any python2
       cmake_args << "-DBUILD_PYTHON3=#{build.with?("python") ? "ON" : "OFF"}"
       cmake_args << "-DUSE_OPENMP=OFF"
+      cmake_args << "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
       cmake_args << "-DUSE_FFTW3=ON" << "-DFFTW3_ROOT_DIR=#{HOMEBREW_PREFIX}"
       cmake_args << "-DUSE_HDF5=ON" << "-DHDF5_ROOT_DIR=#{HOMEBREW_PREFIX}"
       # cmake_args << "-DBoost_NO_BOOST_CMAKE=ON"
