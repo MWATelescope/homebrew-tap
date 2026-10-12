@@ -6,6 +6,12 @@ class Aoflagger < Formula
   sha256 "4caf3e9ab0b998c59061836745778e9ea65e020700750d899da66a2ece092367"
   license "GPL-3.0-only"
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.12.09.54"
+    sha256 arm64_tahoe:   "d7dfcafae9dc474effd576e3e638ed1bb2326ada29e763348045162cfd15fc0f"
+    sha256 arm64_sequoia: "0c7abc9d54da23fc7ba7fa297567c5ee3906e70a5ab67c7207a09c24344b11d3"
+  end
+
   depends_on "boost" => :build # header-only use
   depends_on "boost-build" => :build
   depends_on "cmake" => :build

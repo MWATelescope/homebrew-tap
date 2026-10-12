@@ -6,6 +6,12 @@ class Casacore < Formula
   sha256 "c8e0f9dfd52fc17c27c91548c222bed0a5874b75989fcaf002f83826db83b446"
   head "https://github.com/casacore/casacore.git", branch: "master"
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.12.09.54"
+    sha256 cellar: :any, arm64_tahoe:   "014551dae998c37fc1bc6ffc48b208520b4184b6c815b43e908008b6b6f23be8"
+    sha256 cellar: :any, arm64_sequoia: "c8898724977925aec3642c02f9898265dc7138234fc04c2cff65acd281e353ef"
+  end
+
   option "without-python", "Build without Python bindings"
 
   depends_on "bison" => :build
