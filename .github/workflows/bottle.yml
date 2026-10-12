@@ -48,6 +48,7 @@ jobs:
           rm -rf "$TAP_DIR"
           mkdir -p "$(dirname "$TAP_DIR")"
           ln -s "$GITHUB_WORKSPACE" "$TAP_DIR"
+          brew trust mwatelescope/tap
 
       - run: brew style Formula/*
 
@@ -58,7 +59,6 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-14
           - macos-15
           - macos-26
     runs-on: ${{ matrix.os }}
@@ -76,6 +76,7 @@ jobs:
           rm -rf "$TAP_DIR"
           mkdir -p "$(dirname "$TAP_DIR")"
           ln -s "$GITHUB_WORKSPACE" "$TAP_DIR"
+          brew trust mwatelescope/tap
 
       - name: bottle and upload release assets
         continue-on-error: true
@@ -94,7 +95,14 @@ jobs:
 
       # the merge job downloads these from the release (replaces actions/upload-artifact)
       - name: upload bottle json
-        run: gh release upload "${{ needs.create_release.outputs.release }}" ./*.bottle.json --clobber
+        run: |
+          shopt -s nullglob
+          jsons=(./*.bottle.json)
+          if [ ${#jsons[@]} -eq 0 ]; then
+            echo "::warning::no bottles were built on ${{ matrix.os }}"
+            exit 0
+          fi
+          gh release upload "${{ needs.create_release.outputs.release }}" "${jsons[@]}" --clobber
 
   merge:
     needs:
@@ -114,6 +122,7 @@ jobs:
           rm -rf "$TAP_DIR"
           mkdir -p "$(dirname "$TAP_DIR")"
           ln -s "$GITHUB_WORKSPACE" "$TAP_DIR"
+          brew trust mwatelescope/tap
       - name: download bottle json
         run: |
           release="${{ needs.create_release.outputs.release }}"

@@ -39,7 +39,7 @@ class Aoflagger < Formula
       cmake_args << "-DPORTABLE=False"
       cmake_args << "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
       cmake_args << "-DUSE_HDF5=ON" << "-DHDF5_ROOT_DIR=#{HOMEBREW_PREFIX}" if build.with?("hdf5")
-      system "cmake", "../..", *cmake_args
+      system "cmake", "-S", "../..", "-B", ".", *cmake_args
       system "make", "install"
     end
   end

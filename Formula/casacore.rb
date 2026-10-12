@@ -61,7 +61,7 @@ class Casacore < Formula
         numpy_include = `#{python_exe} -c "import numpy; print(numpy.get_include())"`.strip
         cmake_args << "-DPython3_NumPy_INCLUDE_DIR=#{numpy_include}"
       end
-      system "cmake", "../..", *cmake_args
+      system "cmake", "-S", "../..", "-B", ".", *cmake_args
       system "make", "install"
     end
   end

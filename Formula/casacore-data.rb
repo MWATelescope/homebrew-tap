@@ -10,10 +10,10 @@ class CasacoreData < Formula
   desc "Ephemerides and geodetic data for casacore measures (via Astron)"
   homepage "https://github.com/casacore/casacore"
   # curl ftp://anonymous@ftp.astron.nl/outgoing/Measures/
-  url "ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20250128-160001.ztar", using: ZtarDownloadStrategy
-  version "20250128-160001"
-  # curl -s 'ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20250128-160001.ztar' | sha256 -
-  sha256 "5835e3f5458d8f88fd057044a891d26a5cbfdec9a865967b1189d4fd52140c80"
+  url "ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20261011-160001.ztar", using: ZtarDownloadStrategy
+  version "20261011-160001"
+  # curl -s 'ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20261011-160001.ztar' | sha256 -
+  sha256 "9d9989917a77eb1f7b67c36314a77b36fa33e28603690c037c734b30dc3970fd"
   head "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar", using: ZtarDownloadStrategy
 
   bottle do

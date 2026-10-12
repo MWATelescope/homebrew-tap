@@ -25,8 +25,8 @@ class Wcslib < Formula
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--with-cfitsiolib=#{Formula["cfitsio_reentrant"].opt_lib}",
-                          "--with-cfitsioinc=#{Formula["cfitsio_reentrant"].opt_include}",
+                          "--with-cfitsiolib=#{formula_opt_lib("cfitsio_reentrant")}",
+                          "--with-cfitsioinc=#{formula_opt_include("cfitsio_reentrant")}",
                           "--without-pgplot",
                           "--disable-fortran"
     system "make", "install"
