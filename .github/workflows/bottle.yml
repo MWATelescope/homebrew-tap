@@ -100,7 +100,8 @@ jobs:
           for package in ${{ env.package_order }}; do
             formula="mwatelescope/tap/$package"
             # the bottle URL includes the version, so a stale bottle block after a version bump 404s
-            bottle_url=$(brew ruby -e "b = Formulary.factory('$formula').bottle; puts b.url if b")
+            # (Formula#bottle can't be used: under `brew ruby` it rejects non-relocatable bottles)
+            bottle_url=$(brew ruby -e "puts Formulary.factory('$formula').bottle_for_tag(Utils::Bottles.tag)&.url")
             if [ "${{ inputs.rebottle_all }}" != "true" ] && [ -n "$bottle_url" ] &&
                curl -fsIL -o /dev/null "$bottle_url"; then
               echo "::notice::$package is already bottled for this macOS, skipping"
@@ -203,5 +204,10 @@ jobs:
           git commit -m "[skip ci] Update bottle blocks"
           # main may have moved on while bottling
           git fetch -q --deepen=50 origin main
-          git rebase FETCH_HEAD
+          if ! git rebase FETCH_HEAD; then
+            # a newer commit changed the same formulae; its own run bottles them
+            git rebase --abort
+            echo "::warning::main changed these formulae while bottling; leaving them to the newer run"
+            exit 0
+          fi
           git push origin HEAD:main
