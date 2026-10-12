@@ -14,6 +14,7 @@ class Casacore < Formula
   depends_on "gcc" # for gfortran
   depends_on "gsl"
   depends_on "hdf5"
+  depends_on "libdeflate"
   depends_on "mwatelescope/tap/casacore-data"
   depends_on "mwatelescope/tap/cfitsio_reentrant"
   depends_on "mwatelescope/tap/wcslib"
