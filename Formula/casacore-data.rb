@@ -16,6 +16,12 @@ class CasacoreData < Formula
   sha256 "9d9989917a77eb1f7b67c36314a77b36fa33e28603690c037c734b30dc3970fd"
   head "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar", using: ZtarDownloadStrategy
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.12.09.04"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "d988216b29f3da347c4e415fa3c71cf4a45a8c71bb0a83a22842e454de673438"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "39c0e94480e3e37da53ff22d2028bf569259362fc498685f9030c7c6c2f723f8"
+  end
+
   option "with-casapy", "Use Mac CASA.App (aka casapy) data directory if found"
 
   deprecated_option "use-casapy" => "with-casapy"
