@@ -113,9 +113,23 @@ shell, `git` and the preinstalled `gh` CLI rather than any `uses:` actions.
 ### Known fragile spots
 
 - **casacore-data**: ASTRON only keeps recent `WSRT_Measures_*.ztar` files on
-  <ftp://ftp.astron.nl/outgoing/Measures/>, so the pinned URL disappears after a
-  few months. When CI fails to download it, bump `url`/`version`/`sha256` to the
-  latest file listed there.
+  <ftp://ftp.astron.nl/outgoing/Measures/>, so the tarball the formula uses is
+  mirrored to a `measures-<version>` release on this repo (ASTRON is kept as a
+  `mirror`). The measures tables (leap seconds, Earth orientation) go stale, so
+  refresh them every few months:
+
+  ```bash
+  file=$(curl -s --list-only ftp://ftp.astron.nl/outgoing/Measures/ | grep '^WSRT_Measures_2' | sort | tail -1)
+  version=${file#WSRT_Measures_}; version=${version%.ztar}
+  curl -fsSO "ftp://anonymous@ftp.astron.nl/outgoing/Measures/$file"
+  shasum -a 256 "$file"
+  gh release create "measures-$version" "$file" --latest=false \
+    --title "casacore measures data $version" --notes "Mirror of ASTRON's $file"
+  ```
+
+  then update the `measures-...` and file names in `url` and `mirror`, plus
+  `version` and `sha256`, in `Formula/casacore-data.rb`. Keep old
+  `measures-*` releases, so that previous formula versions still install.
 - **casacore**'s Python bindings must use the same Python as Homebrew's
   `boost-python3` and `numpy`; when those move to a new Python, update
   `python@3.x` in `casacore.rb` and `aoflagger.rb`.

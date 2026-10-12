@@ -9,10 +9,12 @@ end
 class CasacoreData < Formula
   desc "Ephemerides and geodetic data for casacore measures (via Astron)"
   homepage "https://github.com/casacore/casacore"
-  # curl ftp://anonymous@ftp.astron.nl/outgoing/Measures/
-  url "ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20261011-160001.ztar", using: ZtarDownloadStrategy
+  # ASTRON only keeps recent tarballs, so each one used here is mirrored to a release on this
+  # repo (tag measures-<version>). To update, see "casacore-data" in the README.
+  url "https://github.com/MWATelescope/homebrew-tap/releases/download/measures-20261011-160001/WSRT_Measures_20261011-160001.ztar",
+      using: ZtarDownloadStrategy
+  mirror "ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20261011-160001.ztar"
   version "20261011-160001"
-  # curl -s 'ftp://anonymous@ftp.astron.nl/outgoing/Measures/WSRT_Measures_20261011-160001.ztar' | sha256 -
   sha256 "9d9989917a77eb1f7b67c36314a77b36fa33e28603690c037c734b30dc3970fd"
   head "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar", using: ZtarDownloadStrategy
 
