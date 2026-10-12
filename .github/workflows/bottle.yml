@@ -1,35 +1,34 @@
 # Forked from https://github.com/dawidd6/homebrew-test-tap-new/blob/main/.github/workflows/tests.yml
+# Org policy only allows actions owned by MWATelescope, so this uses plain shell, git and the
+# preinstalled gh CLI instead of actions/checkout, actions/create-release, etc.
 
 name: brew test-bot
 on:
   push:
     branches:
     - main
+permissions:
+  contents: write
 env:
   package_order: "cfitsio_reentrant casacore-data wcslib casacore aoflagger birli"
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_REPO: ${{ github.repository }}
 jobs:
   create_release:
     runs-on: ubuntu-latest
     outputs:
       release: ${{ steps.version.outputs.release }}
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
       root_url: ${{ steps.get_root.outputs.root_url }}
     steps:
       - name: Get version number from current date
         id: version
         run: echo "release=$(date +'v%Y.%m.%d.%H.%M')" | tee -a "$GITHUB_OUTPUT"
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ steps.version.outputs.release }}
-          release_name: Release ${{ steps.version.outputs.release }}
-          body: |
-            Brew bottles for cfitsio_reentrant, casacore-data, wcslib, casacore, aoflagger, birli
-          draft: false
-          prerelease: false
+        run: |
+          gh release create "${{ steps.version.outputs.release }}" \
+            --target "$GITHUB_SHA" \
+            --title "Release ${{ steps.version.outputs.release }}" \
+            --notes "Brew bottles for cfitsio_reentrant, casacore-data, wcslib, casacore, aoflagger, birli"
       - name: Get Root URL
         id: get_root
         run: echo "root_url=${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.version.outputs.release }}" | tee -a "$GITHUB_OUTPUT"
@@ -37,12 +36,13 @@ jobs:
   style:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-
-      # Homebrew is preinstalled on GitHub macOS runners; link this checkout as the tap
-      # (replaces Homebrew/actions/setup-homebrew, which org policy does not allow).
-      - name: Set up Homebrew and tap
+      # Homebrew is preinstalled on GitHub macOS runners; check out this commit and link it as the tap
+      - name: Checkout and set up tap
         run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+          git fetch -q --depth 1 origin "$GITHUB_SHA"
+          git checkout -q -B main FETCH_HEAD
           brew update
           TAP_DIR="$(brew --repository)/Library/Taps/mwatelescope/homebrew-tap"
           rm -rf "$TAP_DIR"
@@ -64,102 +64,37 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: create_release
     steps:
-      - uses: actions/checkout@v4
-
-      # Homebrew is preinstalled on GitHub macOS runners; link this checkout as the tap
-      # (replaces Homebrew/actions/setup-homebrew, which org policy does not allow).
-      - name: Set up Homebrew and tap
+      # Homebrew is preinstalled on GitHub macOS runners; check out this commit and link it as the tap
+      - name: Checkout and set up tap
         run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+          git fetch -q --depth 1 origin "$GITHUB_SHA"
+          git checkout -q -B main FETCH_HEAD
           brew update
           TAP_DIR="$(brew --repository)/Library/Taps/mwatelescope/homebrew-tap"
           rm -rf "$TAP_DIR"
           mkdir -p "$(dirname "$TAP_DIR")"
           ln -s "$GITHUB_WORKSPACE" "$TAP_DIR"
 
-      - name: bottle
+      - name: bottle and upload release assets
         continue-on-error: true
         run: |
           for package in ${{ env.package_order }}; do
             brew uninstall --ignore-dependencies --force $package || true
             brew install --formula --build-bottle mwatelescope/tap/$package
             brew bottle --json --root-url="${{ needs.create_release.outputs.root_url }}" mwatelescope/tap/$package
-            echo "${package}_path=$(ls ${package}--*.bottle*.tar.gz)" | tee -a "$GITHUB_ENV"
+            bottle_path=$(ls ${package}--*.bottle*.tar.gz)
             # this deals with https://github.com/orgs/Homebrew/discussions/4541
             # e.g. if path is hello--2.12_98.arm64_ventura.bottle.1.tar.gz, filename should be hello-2.12_98.arm64_ventura.bottle.1.tar.gz
-            echo "${package}_filename=$(ls ${package}--*.bottle*.tar.gz | sed 's/--/-/')" | tee -a "$GITHUB_ENV"
+            bottle_filename=$(echo "$bottle_path" | sed 's/--/-/')
+            mv "$bottle_path" "$bottle_filename"
+            gh release upload "${{ needs.create_release.outputs.release }}" "$bottle_filename" --clobber
           done
 
-      - name: Upload cfitsio_reentrant Release Asset
-        uses: actions/upload-release-asset@v1.0.1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ${{ env.cfitsio_reentrant_path }}
-          asset_name: ${{ env.cfitsio_reentrant_filename }}
-          asset_content_type: application/gzip
-
-      - name: Upload casacore-data Release Asset
-        uses: actions/upload-release-asset@v1.0.1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ${{ env.casacore-data_path }}
-          asset_name: ${{ env.casacore-data_filename }}
-          asset_content_type: application/gzip
-
-      - name: Upload wcslib Release Asset
-        uses: actions/upload-release-asset@v1.0.1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ${{ env.wcslib_path }}
-          asset_name: ${{ env.wcslib_filename }}
-          asset_content_type: application/gzip
-
-      - name: Upload casacore Release Asset
-        uses: actions/upload-release-asset@v1.0.1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ${{ env.casacore_path }}
-          asset_name: ${{ env.casacore_filename }}
-          asset_content_type: application/gzip
-
-      - name: Upload aoflagger Release Asset
-        uses: actions/upload-release-asset@v1.0.1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ${{ env.aoflagger_path }}
-          asset_name: ${{ env.aoflagger_filename }}
-          asset_content_type: application/gzip
-
-      - name: Upload birli Release Asset
-        uses: actions/upload-release-asset@v1.0.1
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ${{ env.birli_path }}
-          asset_name: ${{ env.birli_filename }}
-          asset_content_type: application/gzip
-
-      - name: upload bottle artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: bottle_${{ matrix.os }}
-          path: ./*.bottle.json
+      # the merge job downloads these from the release (replaces actions/upload-artifact)
+      - name: upload bottle json
+        run: gh release upload "${{ needs.create_release.outputs.release }}" ./*.bottle.json --clobber
 
   merge:
     needs:
@@ -167,30 +102,30 @@ jobs:
       - bottle
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-
-      # Homebrew is preinstalled on GitHub macOS runners; link this checkout as the tap
-      # (replaces Homebrew/actions/setup-homebrew, which org policy does not allow).
-      - name: Set up Homebrew and tap
+      # Homebrew is preinstalled on GitHub macOS runners; check out this commit and link it as the tap
+      - name: Checkout and set up tap
         run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+          git fetch -q --depth 1 origin "$GITHUB_SHA"
+          git checkout -q -B main FETCH_HEAD
           brew update
           TAP_DIR="$(brew --repository)/Library/Taps/mwatelescope/homebrew-tap"
           rm -rf "$TAP_DIR"
           mkdir -p "$(dirname "$TAP_DIR")"
           ln -s "$GITHUB_WORKSPACE" "$TAP_DIR"
-      - name: download bottle artifacts
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-          pattern: bottle_*
+      - name: download bottle json
+        run: |
+          release="${{ needs.create_release.outputs.release }}"
+          gh release download "$release" --pattern '*.bottle.json'
+          for json in ./*.bottle.json; do
+            gh release delete-asset "$release" "$(basename "$json")" --yes
+          done
       - name: Merge bottle do blocks and commit
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           brew bottle --merge --write --no-commit ./*.bottle.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
           for package in ${{ env.package_order }}; do
             git diff ./Formula/${package}.rb
           done
