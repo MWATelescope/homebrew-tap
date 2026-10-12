@@ -1,16 +1,32 @@
 # Forked from https://github.com/dawidd6/homebrew-test-tap-new/blob/main/.github/workflows/tests.yml
 # Org policy only allows actions owned by MWATelescope, so this uses plain shell, git and the
 # preinstalled gh CLI instead of actions/checkout, actions/create-release, etc.
+#
+# On every push to main, each formula in package_order without a downloadable bottle for a
+# runner's macOS version (e.g. because its version or revision changed) is built, tested, bottled,
+# uploaded to a new release, and its bottle block is committed back to main.
+# Run manually ("Run workflow") with rebottle_all to rebuild every bottle.
 
 name: brew test-bot
 on:
   push:
     branches:
     - main
+  workflow_dispatch:
+    inputs:
+      rebottle_all:
+        description: "Rebuild bottles for every formula, even ones that are already bottled"
+        type: boolean
+        default: false
 permissions:
   contents: write
+# runs push bottle-block commits to main, so never run two at once
+concurrency:
+  group: bottle
+  cancel-in-progress: false
 env:
-  package_order: "cfitsio_reentrant casacore-data wcslib casacore aoflagger birli"
+  # dependency order: each formula's tap dependencies must come before it
+  package_order: "cfitsio_reentrant casacore-data wcslib casacore aoflagger birli mwa-fee-beam hyperdrive"
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
 jobs:
@@ -28,7 +44,7 @@ jobs:
           gh release create "${{ steps.version.outputs.release }}" \
             --target "$GITHUB_SHA" \
             --title "Release ${{ steps.version.outputs.release }}" \
-            --notes "Brew bottles for cfitsio_reentrant, casacore-data, wcslib, casacore, aoflagger, birli"
+            --notes "Homebrew bottles for the MWA software stack"
       - name: Get Root URL
         id: get_root
         run: echo "root_url=${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.version.outputs.release }}" | tee -a "$GITHUB_OUTPUT"
@@ -52,11 +68,10 @@ jobs:
 
       - run: brew style Formula/*
 
-      - run: brew test-bot --only-cleanup-before Formula/*
-
-      - run: brew test-bot --only-setup Formula/*
+      - run: brew readall --aliases mwatelescope/tap
   bottle:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - macos-15
@@ -79,19 +94,48 @@ jobs:
           brew trust mwatelescope/tap
 
       - name: bottle and upload release assets
-        continue-on-error: true
+        id: bottle
         run: |
+          failed=()
           for package in ${{ env.package_order }}; do
-            brew uninstall --ignore-dependencies --force $package || true
-            brew install --formula --build-bottle mwatelescope/tap/$package
-            brew bottle --json --root-url="${{ needs.create_release.outputs.root_url }}" mwatelescope/tap/$package
-            bottle_path=$(ls ${package}--*.bottle*.tar.gz)
-            # this deals with https://github.com/orgs/Homebrew/discussions/4541
-            # e.g. if path is hello--2.12_98.arm64_ventura.bottle.1.tar.gz, filename should be hello-2.12_98.arm64_ventura.bottle.1.tar.gz
-            bottle_filename=$(echo "$bottle_path" | sed 's/--/-/')
-            mv "$bottle_path" "$bottle_filename"
-            gh release upload "${{ needs.create_release.outputs.release }}" "$bottle_filename" --clobber
+            formula="mwatelescope/tap/$package"
+            # the bottle URL includes the version, so a stale bottle block after a version bump 404s
+            bottle_url=$(brew ruby -e "b = Formulary.factory('$formula').bottle; puts b.url if b")
+            if [ "${{ inputs.rebottle_all }}" != "true" ] && [ -n "$bottle_url" ] &&
+               curl -fsIL -o /dev/null "$bottle_url"; then
+              echo "::notice::$package is already bottled for this macOS, skipping"
+              continue
+            fi
+            failed_deps=()
+            for dep in $(brew deps "$formula"); do
+              for f in "${failed[@]}"; do
+                [ "$dep" = "mwatelescope/tap/$f" ] && failed_deps+=("$f")
+              done
+            done
+            if [ ${#failed_deps[@]} -gt 0 ]; then
+              echo "::error::skipping $package because its dependencies failed: ${failed_deps[*]}"
+              failed+=("$package")
+              continue
+            fi
+            echo "::group::$package"
+            if brew uninstall --ignore-dependencies --force "$package" 2>/dev/null || true &&
+               brew install --formula --build-bottle "$formula" &&
+               brew test "$formula" &&
+               brew bottle --json --root-url="${{ needs.create_release.outputs.root_url }}" "$formula"; then
+              bottle_path=$(ls "${package}"--*.bottle*.tar.gz)
+              # this deals with https://github.com/orgs/Homebrew/discussions/4541
+              # e.g. if path is hello--2.12_98.arm64_ventura.bottle.1.tar.gz, filename should be hello-2.12_98.arm64_ventura.bottle.1.tar.gz
+              bottle_filename=$(echo "$bottle_path" | sed 's/--/-/')
+              mv "$bottle_path" "$bottle_filename"
+              gh release upload "${{ needs.create_release.outputs.release }}" "$bottle_filename" --clobber
+              echo "::endgroup::"
+            else
+              echo "::endgroup::"
+              echo "::error::failed to bottle $package on ${{ matrix.os }}"
+              failed+=("$package")
+            fi
           done
+          echo "failed=${failed[*]}" >> "$GITHUB_OUTPUT"
 
       # the merge job downloads these from the release (replaces actions/upload-artifact)
       - name: upload bottle json
@@ -99,15 +143,24 @@ jobs:
           shopt -s nullglob
           jsons=(./*.bottle.json)
           if [ ${#jsons[@]} -eq 0 ]; then
-            echo "::warning::no bottles were built on ${{ matrix.os }}"
+            echo "no new bottles on ${{ matrix.os }}"
             exit 0
           fi
           gh release upload "${{ needs.create_release.outputs.release }}" "${jsons[@]}" --clobber
+
+      # fail the job (after uploading what did work) so broken formulae are visible
+      - name: check for failures
+        if: steps.bottle.outputs.failed != ''
+        run: |
+          echo "::error::failed to bottle on ${{ matrix.os }}: ${{ steps.bottle.outputs.failed }}"
+          exit 1
 
   merge:
     needs:
       - create_release
       - bottle
+    # merge whatever was bottled, even if some formulae failed
+    if: ${{ !cancelled() && needs.create_release.result == 'success' }}
     runs-on: macos-latest
     steps:
       # Homebrew is preinstalled on GitHub macOS runners; check out this commit and link it as the tap
@@ -124,20 +177,31 @@ jobs:
           ln -s "$GITHUB_WORKSPACE" "$TAP_DIR"
           brew trust mwatelescope/tap
       - name: download bottle json
+        id: download
         run: |
           release="${{ needs.create_release.outputs.release }}"
-          gh release download "$release" --pattern '*.bottle.json'
-          for json in ./*.bottle.json; do
+          gh release download "$release" --pattern '*.bottle.json' || true
+          shopt -s nullglob
+          jsons=(./*.bottle.json)
+          if [ ${#jsons[@]} -eq 0 ]; then
+            echo "nothing was bottled; deleting empty release $release"
+            gh release delete "$release" --yes --cleanup-tag
+            echo "empty=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          for json in "${jsons[@]}"; do
             gh release delete-asset "$release" "$(basename "$json")" --yes
           done
       - name: Merge bottle do blocks and commit
+        if: steps.download.outputs.empty != 'true'
         run: |
           brew bottle --merge --write --no-commit ./*.bottle.json
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          for package in ${{ env.package_order }}; do
-            git diff ./Formula/${package}.rb
-          done
+          git diff ./Formula
           git add ./Formula/*.rb
           git commit -m "[skip ci] Update bottle blocks"
-          git push origin main
+          # main may have moved on while bottling
+          git fetch -q --deepen=50 origin main
+          git rebase FETCH_HEAD
+          git push origin HEAD:main
