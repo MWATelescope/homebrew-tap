@@ -31,7 +31,7 @@ class Casacore < Formula
   if build.with?("python")
     # if this line changes https://github.com/Homebrew/homebrew-core/blob/dc61aaab304abbb8ef863eed3313b6661846f79e/Formula/b/boost-python3.rb#L28
     # then this will break.
-    # if you change this line, you should also change the line below:
+    # if you change this line, you should also change the line below
     # python_exe = which("python3.13")
     depends_on "python@3.13"
     depends_on "numpy"
