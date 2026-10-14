@@ -34,7 +34,6 @@ class CfitsioReentrant < Formula
     system "cmake", "-S", ".", "-B", "build", *cmake_args
     system "cmake", "--build", "build"
     system "cmake", "--install", "build"
-
     (pkgshare/"testprog").install Dir["testprog*", "utilities/testprog.c"]
   end
 
