@@ -4,14 +4,8 @@ class Casacore < Formula
   homepage "https://github.com/casacore/casacore"
   url "https://github.com/casacore/casacore/archive/refs/tags/v3.8.1.tar.gz"
   sha256 "c8e0f9dfd52fc17c27c91548c222bed0a5874b75989fcaf002f83826db83b446"
-  revision 1
+  revision 2
   head "https://github.com/casacore/casacore.git", branch: "master"
-
-  bottle do
-    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.13.02.44"
-    sha256 cellar: :any, arm64_tahoe:   "1ea2733d48b6b00e127dfeee5c24f06e5a1ac692053888565c640083f7b05a45"
-    sha256 cellar: :any, arm64_sequoia: "12689d7ea701af83fc1f66a23730d3bf9fea191ce9057cd2befb8494f0ec457b"
-  end
 
   option "without-python", "Build without Python bindings"
 
@@ -26,7 +20,6 @@ class Casacore < Formula
   depends_on "mwatelescope/tap/cfitsio_reentrant"
   depends_on "mwatelescope/tap/wcslib"
   depends_on "ncurses"
-  depends_on "openblas"
   depends_on "readline"
 
   if build.with?("python")
@@ -52,6 +45,8 @@ class Casacore < Formula
       cmake_args << "-DBUILD_PYTHON=OFF" # avoid any python2
       cmake_args << "-DBUILD_PYTHON3=#{build.with?("python") ? "ON" : "OFF"}"
       cmake_args << "-DUSE_OPENMP=OFF"
+      # Accelerate, not OpenBLAS: wsclean refuses to run with an OpenMP OpenBLAS loaded
+      cmake_args << "-DBLA_VENDOR=Apple"
       cmake_args << "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
       cmake_args << "-DUSE_FFTW3=ON" << "-DFFTW3_ROOT_DIR=#{HOMEBREW_PREFIX}"
       cmake_args << "-DUSE_HDF5=ON" << "-DHDF5_ROOT_DIR=#{HOMEBREW_PREFIX}"
