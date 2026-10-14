@@ -29,6 +29,7 @@ Keep everything up to date with `brew update && brew upgrade`.
 | --- | --- |
 | `birli` | [Birli](https://github.com/MWATelescope/Birli): preprocess raw MWA visibilities (RFI flagging with aoflagger, averaging, conversion to measurement sets / uvfits) |
 | `hyperdrive` | [hyperdrive](https://github.com/MWATelescope/mwa_hyperdrive): MWA calibration software |
+| `wsclean` | [WSClean](https://gitlab.com/aroffringa/wsclean) widefield imager (`wsclean`, `chgcentre`) |
 | `mwa-fee-beam` | The MWA FEE beam model file (`mwa_full_embedded_element_pattern.h5`) |
 | `aoflagger` | [AOFlagger](https://gitlab.com/aroffringa/aoflagger) RFI flagger (`aoflagger`, `aoquality`, `libaoflagger`) |
 | `casacore` | [casacore](https://github.com/casacore/casacore) libraries and tools, with Python bindings |
@@ -80,9 +81,10 @@ cd "$(brew --repository mwatelescope/tap)"
    (`curl -fsSL <url> | shasum -a 256`).
 2. If a library's ABI changed (e.g. casacore's `libcasa_*.N.dylib` number went
    up), add or bump `revision` in every formula that links against it so users'
-   `brew upgrade` rebuilds them. Currently `aoflagger` links casacore, `birli`
-   links aoflagger, and `wcslib`/`casacore`/`aoflagger`/`birli`/`hyperdrive`
-   link `cfitsio_reentrant`.
+   `brew upgrade` rebuilds them. Currently `aoflagger` and `wsclean` link casacore,
+   `birli` links aoflagger, and
+   `wcslib`/`casacore`/`aoflagger`/`birli`/`hyperdrive`/`wsclean` link
+   `cfitsio_reentrant`.
 3. Test locally:
 
    ```bash

@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: false
 env:
   # dependency order: each formula's tap dependencies must come before it
-  package_order: "cfitsio_reentrant casacore-data wcslib casacore aoflagger birli mwa-fee-beam hyperdrive"
+  package_order: "cfitsio_reentrant casacore-data wcslib casacore aoflagger birli mwa-fee-beam hyperdrive wsclean"
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
 jobs:
