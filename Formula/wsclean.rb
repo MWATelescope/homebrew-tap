@@ -8,6 +8,12 @@ class Wsclean < Formula
   license "GPL-3.0-or-later"
   head "https://gitlab.com/aroffringa/wsclean.git", branch: "master"
 
+  bottle do
+    root_url "https://github.com/MWATelescope/homebrew-tap/releases/download/v2026.10.14.06.22"
+    sha256 cellar: :any, arm64_tahoe:   "0a1b5b51cd0f6b2c53bba7d6f4599cadef4cc8f3a39e9687b395089cdf09487a"
+    sha256 cellar: :any, arm64_sequoia: "0560c0b57c5e30f24145a6630cf3facffd2042337348f412ad7fd2751975d4e7"
+  end
+
   depends_on "cmake" => :build
   depends_on "pybind11" => :build
   depends_on "boost"
