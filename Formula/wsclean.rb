@@ -16,7 +16,7 @@ class Wsclean < Formula
   depends_on "hdf5"
   depends_on "mwatelescope/tap/casacore"
   depends_on "mwatelescope/tap/cfitsio_reentrant"
-  depends_on "python@3.14" # embedded via pybind11
+  depends_on "python@3.15" # embedded via pybind11
 
   def install
     # libc++ does not pull in <semaphore> transitively like libstdc++ does
@@ -29,7 +29,9 @@ class Wsclean < Formula
     # bottles must run on any Apple Silicon CPU, not just the CI runner's
     cmake_args << "-DPORTABLE=ON"
     cmake_args << "-DBLA_VENDOR=Apple"
-    cmake_args << "-DPython3_EXECUTABLE=#{which("python3.14")}"
+    python = which("python3.15")
+    # pybind11 also does a legacy FindPythonInterp lookup, which would otherwise pick python3 on PATH
+    cmake_args << "-DPython3_EXECUTABLE=#{python}" << "-DPYTHON_EXECUTABLE=#{python}"
     # optional features (wsclean-mp, beams, IDG) stay off even if found on the build machine
     cmake_args << "-DCMAKE_DISABLE_FIND_PACKAGE_MPI=ON"
     cmake_args << "-DCMAKE_DISABLE_FIND_PACKAGE_EveryBeam=ON"

@@ -26,8 +26,8 @@ class Casacore < Formula
     # if this line changes https://github.com/Homebrew/homebrew-core/blob/dc61aaab304abbb8ef863eed3313b6661846f79e/Formula/b/boost-python3.rb#L28
     # then this will break.
     # if you change this line, you should also change the line below
-    # python_exe = which("python3.14")
-    depends_on "python@3.14"
+    # python_exe = which("python3.15")
+    depends_on "python@3.15"
     depends_on "numpy"
     depends_on "boost" # libcasa_python3 links boost libraries directly
     depends_on "boost-python3"
@@ -53,7 +53,7 @@ class Casacore < Formula
       # cmake_args << "-DBoost_NO_BOOST_CMAKE=ON"
       cmake_args << "-DDATA_DIR=#{casacore_data}"
       if build.with?("python")
-        python_exe = which("python3.14")
+        python_exe = which("python3.15")
         cmake_args << "-DPython3_EXECUTABLE=#{python_exe}"
         numpy_include = `#{python_exe} -c "import numpy; print(numpy.get_include())"`.strip
         cmake_args << "-DPython3_NumPy_INCLUDE_DIR=#{numpy_include}"
