@@ -1,0 +1,21 @@
+class Rpfits < Formula
+  desc "ATNF RPFITS library"
+  homepage "https://www.atnf.csiro.au/computing/software/rpfits.html"
+  url "ftp://ftp.atnf.csiro.au/pub/software/rpfits/rpfits-2.25.tar.gz"
+  sha256 "457c161e5f6a4f232240e501f9d4303c0bdbab8ae2271767d4f06ad1789ad79f"
+
+  depends_on "gcc" => :build
+  depends_on "make" => :build
+
+  def install
+    with_env(
+      "FC"     => ENV["FC"] || (`which gfortran`.chomp << " -fallow-argument-mismatch"),
+      "CC"     => ENV["CC"] || (`which gcc`.chomp << " -arch native"),
+      "PREFIX" => ENV["PREFIX"] || prefix,
+      "FFLAGS" => ENV["FFLAGS"] || "-g -O -fimplicit-none -Wall",
+    ) do
+      system "make", "-C", "darwin", "FC=#{ENV["FC"]}", "CC=#{ENV["CC"]}", "PREFIX=#{ENV["PREFIX"]}",
+"FFLAGS=#{ENV["FFLAGS"]}", "install"
+    end
+  end
+end

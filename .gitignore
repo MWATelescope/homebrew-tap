@@ -1,0 +1,6 @@
+*bottle.json
+.DS_Store
+pkgbuilds/**
+bottle_output.txt
+bottle*.zip
+linkage_output.txt
